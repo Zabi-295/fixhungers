@@ -47,27 +47,41 @@ app.get('/', (req, res) => {
   res.send('Fix Hunger API is running...');
 });
 
-// MongoDB Connection
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+// MongoDB Connection Caching for Vercel
+let isConnected = false;
 
-if (!MONGO_URI) {
-  console.error('FATAL ERROR: MONGO_URI is not defined in environment variables');
-}
+const connectDB = async () => {
+  if (isConnected) return;
 
-mongoose.connect(MONGO_URI, {
-  serverSelectionTimeoutMS: 5000, // 5 seconds timeout
-})
-  .then(() => {
-    console.log('Successfully connected to MongoDB');
-  })
-  .catch(err => {
-    console.error('MongoDB Connection Error Details:', {
-      message: err.message,
-      code: err.code,
-      name: err.name
+  const MONGO_URI = process.env.MONGO_URI;
+  if (!MONGO_URI) {
+    console.error('FATAL ERROR: MONGO_URI is not defined');
+    return;
+  }
+
+  try {
+    const db = await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
     });
-  });
+    isConnected = db.connections[0].readyState;
+    console.log('Successfully connected to MongoDB');
+  } catch (err) {
+    console.error('MongoDB Connection Error:', err.message);
+    throw err;
+  }
+};
+
+// Middleware to ensure DB is connected
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ msg: 'Database Connection Error: ' + err.message });
+  }
+});
+
 
 
 // Bind to 0.0.0.0 for Render deployment or local
