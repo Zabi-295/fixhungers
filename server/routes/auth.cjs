@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const auth = require('../middleware/auth');
+const User = require('../models/User.cjs');
+const auth = require('../middleware/auth.cjs');
 const crypto = require('crypto');
-const { sendVerificationEmail } = require('../utils/emailService');
+const { sendVerificationEmail } = require('../utils/emailService.cjs');
 
 // @route    POST api/auth/signup
 // @desc     Register user
