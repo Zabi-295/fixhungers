@@ -1,7 +1,13 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.cjs": {
+      "runtime": "vercel-node@latest"
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.cjs" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
