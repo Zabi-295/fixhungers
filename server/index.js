@@ -49,15 +49,26 @@ app.get('/', (req, res) => {
 
 // MongoDB Connection
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/fix-hunger';
+const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI)
+if (!MONGO_URI) {
+  console.error('FATAL ERROR: MONGO_URI is not defined in environment variables');
+}
+
+mongoose.connect(MONGO_URI, {
+  serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+})
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Successfully connected to MongoDB');
   })
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB Connection Error Details:', {
+      message: err.message,
+      code: err.code,
+      name: err.name
+    });
   });
+
 
 // Bind to 0.0.0.0 for Render deployment or local
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
