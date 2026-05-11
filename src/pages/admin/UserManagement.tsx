@@ -1,0 +1,187 @@
+import { useState } from "react";
+import { useAdmin } from "@/context/AdminContext";
+import { Search, UserPlus, Pencil, Trash2, Users, CheckCircle, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const UserManagement = () => {
+  const { users, toggleUserStatus, deleteUser, addUser } = useAdmin();
+  const [filter, setFilter] = useState<"all" | "Provider" | "NGO">("all");
+  const [search, setSearch] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState<"Provider" | "NGO">("Provider");
+
+  const filtered = users.filter((u) => {
+    if (filter !== "all" && u.role !== filter) return false;
+    if (search && !u.name.toLowerCase().includes(search.toLowerCase()) && !u.email.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const providers = users.filter((u) => u.role === "Provider" && u.status).length;
+  const ngos = users.filter((u) => u.role === "NGO" && u.status).length;
+  const newRegs = users.filter((u) => {
+    const d = Date.now() - new Date(u.registeredAt).getTime();
+    return d < 30 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  const handleAdd = async () => {
+    if (!newName || !newEmail) return;
+    await addUser({ name: newName, email: newEmail, role: newRole, location: "Lahore, Pakistan" });
+    setNewName("");
+    setNewEmail("");
+    setShowAdd(false);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-xs text-muted-foreground">Admin › User Directory</div>
+        <Link to="/admin/dashboard" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+          <ArrowLeft className="w-3 h-3" /> Back to Dashboard
+        </Link>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">User Directory</h1>
+          <p className="text-sm text-muted-foreground">Manage and oversee all system stakeholders.</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-foreground text-background font-medium text-sm hover:opacity-90 transition w-full sm:w-auto justify-center">
+          <UserPlus className="w-4 h-4" /> Add New User
+        </button>
+      </div>
+
+      {/* Add User Modal */}
+      {showAdd && (
+        <div className="bg-card rounded-xl border border-border p-5 mb-6 space-y-3">
+          <h3 className="font-semibold text-foreground">Add New User</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full Name" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none">
+              <option value="Provider">Provider</option>
+              <option value="NGO">NGO</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Add User</button>
+            <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-lg border border-border text-sm">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-card rounded-xl border border-border p-5">
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+          <div className="flex gap-2 flex-wrap">
+            {(["all", "Provider", "NGO"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  filter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {f === "all" ? "All Users" : f === "Provider" ? "Providers" : "NGOs"}
+              </button>
+            ))}
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, email..."
+              className="pl-9 pr-4 py-2 rounded-lg border border-border text-sm bg-card w-full focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left py-3 px-3 text-xs text-primary font-semibold uppercase">User Identity</th>
+              <th className="text-left py-3 px-3 text-xs text-primary font-semibold uppercase">Role</th>
+              <th className="text-left py-3 px-3 text-xs text-primary font-semibold uppercase">Status</th>
+              <th className="text-left py-3 px-3 text-xs text-primary font-semibold uppercase">Registration Date</th>
+              <th className="text-left py-3 px-3 text-xs text-primary font-semibold uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No users found</td></tr>
+            )}
+            {filtered.map((u) => (
+              <tr key={u.id} className="border-b border-border hover:bg-muted/30 transition">
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground uppercase">
+                      {u.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{u.name}</p>
+                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="py-3 px-3">
+                  <span className={`px-3 py-1 rounded-md text-xs font-semibold ${
+                    u.role === "Provider" ? "bg-primary/10 text-primary" : "bg-blue-100 text-blue-700"
+                  }`}>
+                    {u.role}
+                  </span>
+                </td>
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleUserStatus(u.id)}
+                      className={`w-10 h-5 rounded-full transition-all relative ${u.status ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-card shadow transition-all ${u.status ? "left-5" : "left-0.5"}`} />
+                    </button>
+                    <span className="text-xs">{u.status ? "Active" : "Inactive"}</span>
+                  </div>
+                </td>
+                <td className="py-3 px-3 text-muted-foreground">
+                  {new Date(u.registeredAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+                </td>
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-2">
+                    <button className="p-1.5 hover:bg-muted rounded transition"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                    <button onClick={() => deleteUser(u.id)} className="p-1.5 hover:bg-destructive/10 rounded transition"><Trash2 className="w-4 h-4 text-muted-foreground" /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+        <div className="mt-3 text-xs text-primary">Showing {filtered.length} of {users.length} users</div>
+      </div>
+
+      {/* Bottom stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 sm:mt-6">
+        <div className="bg-card rounded-xl border border-border p-5">
+          <p className="text-[10px] text-muted-foreground uppercase font-semibold">New Registrations</p>
+          <p className="text-2xl font-bold text-foreground">+{newRegs}</p>
+          <p className="text-xs text-primary">↗ last 30 days</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-5">
+          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Verified Providers</p>
+          <p className="text-2xl font-bold text-foreground">{providers}</p>
+          <p className="text-xs text-muted-foreground">Total active food sources</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-5">
+          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Active Couriers</p>
+          <p className="text-2xl font-bold text-foreground">{ngos}</p>
+          <p className="text-xs text-muted-foreground">Online delivery volunteers</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UserManagement;
