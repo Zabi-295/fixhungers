@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User.cjs');
-const auth = require('../middleware/auth.cjs');
+const User = require('../models/User.js');
+const auth = require('../middleware/auth.js');
 
 // @route    GET api/users
 // @desc     Get all users (Admin only)

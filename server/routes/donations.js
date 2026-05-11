@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Donation = require('../models/Donation.cjs');
-const auth = require('../middleware/auth.cjs');
+const Donation = require('../models/Donation.js');
+const auth = require('../middleware/auth.js');
 
 // @route    GET api/donations
 // @desc     Get all donations

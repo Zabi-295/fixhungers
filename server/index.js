@@ -5,9 +5,9 @@ dns.setDefaultResultOrder('ipv4first');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth.cjs');
-const donationRoutes = require('./routes/donations.cjs');
-const userRoutes = require('./routes/users.cjs');
+const authRoutes = require('./routes/auth.js');
+const donationRoutes = require('./routes/donations.js');
+const userRoutes = require('./routes/users.js');
 
 const app = express();
 
