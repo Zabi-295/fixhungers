@@ -59,8 +59,13 @@ mongoose.connect(MONGO_URI)
     console.error('MongoDB connection error:', err);
   });
 
-// Bind to 0.0.0.0 for Render deployment
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Bind to 0.0.0.0 for Render deployment or local
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel Serverless Functions
+module.exports = app;
 
