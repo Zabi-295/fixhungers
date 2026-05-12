@@ -19,8 +19,10 @@ app.use(cors());
 // Initialize Gemini
 let genAI = null;
 if (process.env.GEMINI_API_KEY) {
+  // Force v1 version explicitly
   genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
+
 
 // MongoDB Connection with Caching for Vercel
 let isConnected = false;
@@ -91,9 +93,11 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     }
 
     if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Explicitly request v1 API version
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
 
     const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only.";
+
 
     const result_ai = await model.generateContent([
       prompt,
