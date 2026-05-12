@@ -133,6 +133,34 @@ app.post('/api/ai/analyze-food', async (req, res) => {
   }
 });
 
+// Gemini AI Chatbot Endpoint
+app.post('/api/ai/chat', async (req, res) => {
+  const { message, context } = req.body;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!GEMINI_API_KEY) return res.status(500).json({ error: "API key missing" });
+
+  try {
+    if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
+
+    const systemPrompt = `You are a helpful Rescue Assistant for an NGO platform. 
+    NGO Name: ${context.ngoProfile.fullName}
+    NGO Address: ${context.ngoProfile.address || 'Not set'}
+    Available Donations Count: ${context.donations.length}
+    Current Donations Details: ${JSON.stringify(context.donations.slice(0, 10))}
+    
+    Answer the user's questions based on this data. Be concise and professional.`;
+
+    const result = await model.generateContent([systemPrompt, message]);
+    const response = await result.response;
+    res.json({ text: response.text() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 
 // Basic health check

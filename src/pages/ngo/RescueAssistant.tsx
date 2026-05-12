@@ -88,24 +88,44 @@ const RescueAssistant = () => {
     };
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: input };
     setMessages((prev) => [...prev, userMsg]);
+    const currentInput = input;
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = generateResponse(input);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: currentInput,
+          context: { ngoProfile, donations }
+        }),
+      });
+      const data = await response.json();
+      
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        ...response,
+        content: data.text || "I'm sorry, I encountered an error. Please try again."
       };
       setMessages((prev) => [...prev, assistantMsg]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      const assistantMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "Server connection failed. Please ensure the backend is running."
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 700);
+    }
   };
+
 
   return (
     <div className="flex flex-col h-screen">
