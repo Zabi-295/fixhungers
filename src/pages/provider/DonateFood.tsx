@@ -80,16 +80,22 @@ const DonateFood = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("File selected:", file.name);
+      console.log("File selected:", file.name, file.size, file.type);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
+        const base64 = reader.result as string;
+        // Foran preview dikhao taake display pe aa jaye
+        setImagePreview(base64);
+        
+        // Background mein resizing aur scanning karein
         const img = new Image();
         img.onload = () => {
-          console.log("Image loaded for resizing");
+          console.log("Image loaded for processing, original size:", img.width, "x", img.height);
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const MAX_SIZE = 800;
+          const MAX_SIZE = 1000;
 
           if (width > height) {
             if (width > MAX_SIZE) {
@@ -108,26 +114,19 @@ const DonateFood = () => {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-            setImagePreview(resizedBase64);
-            analyzeFood(resizedBase64);
+            const processedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            console.log("Image resized, sending to AI...");
+            analyzeFood(processedBase64);
           } else {
-            console.error("Could not get canvas context");
-            // Fallback to original if canvas fails
-            setImagePreview(reader.result as string);
-            analyzeFood(reader.result as string);
+            analyzeFood(base64);
           }
         };
-        img.onerror = (err) => {
-          console.error("Image loading error:", err);
-          setImagePreview(reader.result as string);
-          analyzeFood(reader.result as string);
-        };
-        img.src = reader.result as string;
+        img.src = base64;
       };
       reader.readAsDataURL(file);
     }
   };
+
 
 
 
