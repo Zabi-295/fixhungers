@@ -69,22 +69,31 @@ const Login = () => {
   };
 
   const handleAdminLogin = async () => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
-      setLoading(true);
-      setError("");
-      try {
-        await login(email, password);
+    if (!email || !password) {
+      setError("Please enter email and password first");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const result = await login(email, password);
+      console.log("Admin Login Role Check:", result.role);
+      
+      // If it's the specific admin email or the backend says it's an admin
+      if (email === ADMIN_EMAIL || result.role?.toLowerCase() === "admin") {
         toast({ title: "Admin Access Granted", description: "Welcome to the command center." });
         navigate("/admin/dashboard");
-      } catch (err: any) {
-        setError(err.message || "Admin login failed on server.");
-      } finally {
-        setLoading(false);
+      } else {
+        setError("This account does not have Admin privileges.");
       }
-    } else {
-      setError("Invalid admin credentials");
+    } catch (err: any) {
+      setError(err.message || "Admin login failed on server.");
+    } finally {
+      setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
