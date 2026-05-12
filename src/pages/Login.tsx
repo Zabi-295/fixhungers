@@ -41,6 +41,14 @@ const Login = () => {
       toast({ title: "Welcome back!", description: "Login successful." });
       
       const userRole = result.role?.toLowerCase();
+      const selectedRole = role?.toLowerCase();
+
+      // Check if selected role matches database role (Admin bypasses this)
+      if (userRole !== "admin" && userRole !== selectedRole) {
+        setError(`This account is registered as a ${result.role}, but you selected ${role?.toUpperCase()}. Please select the correct role.`);
+        setLoading(false);
+        return;
+      }
       
       if (userRole === "admin") {
         console.log("Navigating to Admin Dashboard...");
@@ -49,11 +57,8 @@ const Login = () => {
         navigate("/provider/dashboard");
       } else if (userRole === "ngo") {
         navigate("/ngo/dashboard");
-      } else if (role === "provider") {
-        navigate("/provider/dashboard");
-      } else {
-        navigate("/ngo/dashboard");
       }
+
 
 
     } catch (err: any) {
