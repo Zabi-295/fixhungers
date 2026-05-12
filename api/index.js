@@ -95,16 +95,10 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     
     let modelName = "gemini-1.5-flash";
-    try {
-      console.log("AI Scan: Fetching available models...");
-      // For performance, we'll try to find any 'gemini-1.5-flash' or 'gemini-1.5-pro' variant
-      // In some accounts, only specific versions like gemini-1.5-flash-001 are visible
-      // We will default to gemini-1.5-flash but if we can confirm another, we use it
-    } catch (discoveryErr) {
-      console.error("Discovery error:", discoveryErr.message);
-    }
-
     const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: "v1beta" });
+
+    const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only.";
+
 
 
     const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only.";
@@ -128,9 +122,22 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("AI Analysis Error:", err.message);
-    res.status(500).json({ error: "AI Scan failed: " + err.message });
+    
+    // Attempt to list models to help debugging
+    let models = [];
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+      const data = await response.json();
+      models = data.models ? data.models.map(m => m.name) : [];
+    } catch (e) {}
+
+    res.status(500).json({ 
+      error: "AI Scan failed: " + err.message,
+      availableModels: models 
+    });
   }
 });
+
 
 // Basic health check
 app.get('/api/health', (req, res) => {
