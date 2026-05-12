@@ -31,10 +31,12 @@ const DonateFood = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiDetected, setAiDetected] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const analyzeFood = async (base64Image: string) => {
     setIsAnalyzing(true);
     setAiDetected(false);
+    setAiError(null);
     try {
       // Direct call to our new backend endpoint
       const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/ai/analyze-food`, {
@@ -67,15 +69,17 @@ const DonateFood = () => {
       });
     } catch (err: any) {
       console.error("AI analysis failed:", err);
+      setAiError(err.message);
       toast({
         title: "AI Analysis Failed",
-        description: "Could not recognize food. Please fill details manually.",
+        description: err.message || "Could not recognize food. Please fill details manually.",
         variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -202,21 +206,41 @@ const DonateFood = () => {
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
 
         {imagePreview ? (
-          <div className="relative inline-block">
-            <img src={imagePreview} alt="Food preview" className="w-full max-w-sm h-48 object-cover rounded-xl border border-border" />
-            <button onClick={() => { setImagePreview(null); setAiDetected(false); }} className="absolute top-2 right-2 w-7 h-7 bg-card/80 backdrop-blur rounded-full flex items-center justify-center border border-border">
-              <X className="w-4 h-4 text-foreground" />
-            </button>
-            {isAnalyzing && (
-              <div className="absolute inset-0 bg-background/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <span className="text-sm font-medium text-primary">Scanning food...</span>
+          <div className="space-y-3">
+            <div className="relative inline-block overflow-hidden rounded-xl border border-border">
+              <img src={imagePreview} alt="Food preview" className="w-full max-w-sm h-48 object-cover" />
+              <button 
+                onClick={() => { setImagePreview(null); setAiDetected(false); setAiError(null); }} 
+                className="absolute top-2 right-2 w-7 h-7 bg-card/80 backdrop-blur rounded-full flex items-center justify-center border border-border z-10"
+              >
+                <X className="w-4 h-4 text-foreground" />
+              </button>
+              
+              {isAnalyzing && (
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center transition-all">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                      <Sparkles className="w-4 h-4 text-primary absolute top-0 right-0 animate-pulse" />
+                    </div>
+                    <span className="text-sm font-bold text-primary animate-pulse tracking-wide">AI SCANNING...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {aiError && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2 max-w-sm">
+                <X className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-destructive">AI Analysis Failed</p>
+                  <p className="text-[10px] text-destructive/80 leading-tight">{aiError}</p>
                 </div>
               </div>
             )}
           </div>
         ) : (
+
           <div
             className="border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center py-10 px-4 transition-all"
           >
