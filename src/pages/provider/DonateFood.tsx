@@ -92,17 +92,17 @@ const DonateFood = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        // Foran preview dikhao taake display pe aa jaye
         setImagePreview(base64);
         
-        // Background mein resizing aur scanning karein
-        const img = new Image();
+        // Use window.Image to avoid conflicts with minified variables
+        const img = new window.Image();
         img.onload = () => {
-          console.log("Image loaded for processing, original size:", img.width, "x", img.height);
+          console.log("Image object created successfully");
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
           const MAX_SIZE = 1000;
+
 
           if (width > height) {
             if (width > MAX_SIZE) {
