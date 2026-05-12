@@ -34,27 +34,17 @@ const DonateFood = () => {
   const [aiError, setAiError] = useState<string | null>(null);
 
   const analyzeFood = async (base64Image: string) => {
-    console.log("analyzeFood called, base64 length:", base64Image.length);
+    console.log("analyzeFood called via Supabase, base64 length:", base64Image.length);
     setIsAnalyzing(true);
     setAiDetected(false);
     setAiError(null);
     try {
-      const apiUrl = `${import.meta.env.VITE_API_URL || '/api'}/ai/analyze-food`;
-      console.log("Calling API:", apiUrl);
-      
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64Image }),
+      const { data, error } = await supabase.functions.invoke("analyze-food", {
+        body: { imageBase64: base64Image },
       });
 
+      if (error) throw error;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "AI Analysis failed");
-      }
-
-      const data = await response.json();
 
       if (data?.name) {
         setName(data.name);
