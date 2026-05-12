@@ -40,28 +40,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Initial restoration from localStorage token (Fastest)
-    const restoreSession = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const res = await apiFetch('/auth/me');
-          setCurrentUser({ ...res, uid: res.id, emailVerified: true });
-        } catch (err) {
-          console.error("Session restoration failed:", err);
-          localStorage.removeItem('token');
-        }
-      }
-      setLoading(false);
-    };
-
-    restoreSession();
-
-    // 2. Listen for Firebase auth changes (Backup & Sync)
+    // Listen for Firebase auth changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        if (firebaseUser.emailVerified && !localStorage.getItem('token')) {
+        // If email is verified, try to fetch MongoDB user data
+        if (firebaseUser.emailVerified) {
           try {
+            // We login to backend using the firebase UID to get our specific MongoDB JWT
             const res = await apiFetch('/auth/login', {
               method: 'POST',
               body: JSON.stringify({ firebaseUid: firebaseUser.uid, email: firebaseUser.email }),
@@ -69,20 +54,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('token', res.token);
             setCurrentUser({ ...res.user, uid: res.user.id, emailVerified: true });
           } catch (err) {
-            console.error("Firebase sync error:", err);
+            console.error("MongoDB fetch error:", err);
+            setCurrentUser(null);
           }
-        }
-      } else {
-        // Only clear if we don't have a manual token anymore
-        if (!localStorage.getItem('token')) {
+        } else {
+          // User exists in firebase but not verified
           setCurrentUser(null);
         }
+      } else {
+        localStorage.removeItem('token');
+        setCurrentUser(null);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
-
 
   const signup = async (email: string, password: string, name: string, role: "Provider" | "NGO") => {
     // 1. Create user in Firebase
@@ -150,17 +137,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    setLoading(true);
-    try {
-      await signOut(auth);
-    } catch (e) {}
+    await signOut(auth);
     localStorage.removeItem('token');
     setCurrentUser(null);
-    // Use replace to prevent back button issues
-    window.location.replace("/login");
   };
-
-
 
   const refreshUser = async () => {
     try {

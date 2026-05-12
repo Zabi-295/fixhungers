@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Building2, HandHeart, LogIn, Mail, Lock, Shield, Loader2, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -13,21 +12,9 @@ const ADMIN_PASS = "fixhunger@123";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, currentUser, loading: authLoading } = useAuth();
+  const { login } = useAuth();
   const { toast } = useToast();
-  
-  // Auto-redirect if already logged in
-  useEffect(() => {
-    if (!authLoading && currentUser) {
-      const role = currentUser.role?.toLowerCase();
-      if (role === "admin") navigate("/admin/dashboard");
-      else if (role === "provider") navigate("/provider/dashboard");
-      else if (role === "ngo") navigate("/ngo/dashboard");
-    }
-  }, [currentUser, authLoading, navigate]);
-
   const [role, setRole] = useState<Role>(null);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
