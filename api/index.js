@@ -123,11 +123,10 @@ app.post('/api/ai/analyze-food', async (req, res) => {
 
     console.log(`AI Scan: Using mimeType ${mimeType}, Data length: ${base64Data.length}`);
     
-    // Using v1 instead of v1beta for better stability with gemini-1.5-flash
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Trying gemini-1.5-flash-latest with v1beta which is often more resilient in different regions
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-
       body: JSON.stringify({
         contents: [{
           parts: [
@@ -141,9 +140,13 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     const data = await response.json();
     
     if (!response.ok) {
-      console.error("Gemini API Error:", JSON.stringify(data));
-      return res.status(response.status).json({ error: "Gemini error: " + (data.error?.message || "Unknown") });
+      console.error("Gemini API Error Detail:", JSON.stringify(data));
+      return res.status(response.status).json({ 
+        error: `Gemini error: ${data.error?.message || "Unknown error"}`,
+        detail: data.error
+      });
     }
+
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     console.log("Gemini Raw Text:", text);
