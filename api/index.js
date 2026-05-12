@@ -51,10 +51,12 @@ app.use((req, res, next) => {
     try {
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (decoded.user.id === '6a0208a67df4a81718019346') {
+      // Matching your specific ID and Email from the screenshot
+      if (decoded.user.id === '6a01c6788b7a039cad61fc42' || decoded.user.email === 'mianawphenomenal@gmail.com') {
         decoded.user.role = 'Admin';
         req.user = decoded.user;
       }
+
     } catch (e) {}
   }
   next();
