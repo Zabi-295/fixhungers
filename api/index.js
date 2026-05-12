@@ -122,10 +122,12 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     }
 
     console.log(`AI Scan: Using mimeType ${mimeType}, Data length: ${base64Data.length}`);
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    
+    // Using v1 instead of v1beta for better stability with gemini-1.5-flash
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+
       body: JSON.stringify({
         contents: [{
           parts: [
