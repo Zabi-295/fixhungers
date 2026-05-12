@@ -71,11 +71,7 @@ app.post('/api/ai/analyze-food', async (req, res) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
   if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: "Gemini API key is not configured in Vercel." });
-  }
-
-  if (!imageBase64) {
-    return res.status(400).json({ error: "No image data provided" });
+    return res.status(500).json({ error: "Gemini API key is not configured." });
   }
 
   try {
@@ -93,50 +89,25 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     }
 
     if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    
-    let modelName = "gemini-1.5-flash";
-    const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: "v1beta" });
-
-    const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only.";
-
-
-
-    const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only.";
-
-
+    // Using v1 which is generally faster and more stable
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
 
     const result_ai = await model.generateContent([
-      prompt,
+      "Identify this food item. Return ONLY a JSON object with: 'name', 'category', 'shelfLifeHours'.",
       { inlineData: { data: base64Data, mimeType: mimeType } }
     ]);
 
     const response_ai = await result_ai.response;
     const text = response_ai.text();
-    console.log("Gemini Response:", text);
-
-    if (!text) throw new Error("AI returned empty content");
-
+    
     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const result = JSON.parse(jsonStr);
-    
-    res.json(result);
+    res.json(JSON.parse(jsonStr));
   } catch (err) {
-    console.error("AI Analysis Error:", err.message);
-    
-    // Attempt to list models to help debugging
-    let models = [];
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-      const data = await response.json();
-      models = data.models ? data.models.map(m => m.name) : [];
-    } catch (e) {}
-
-    res.status(500).json({ 
-      error: "AI Scan failed: " + err.message,
-      availableModels: models 
-    });
+    console.error("AI Error:", err.message);
+    res.status(500).json({ error: "Scan failed: " + err.message });
   }
 });
+
 
 
 // Basic health check
