@@ -99,53 +99,64 @@ app.post('/api/ai/analyze-food', async (req, res) => {
   }
 
   try {
-    console.log("AI Scan Request received");
+    console.log("AI Scan: Starting analysis...");
     
-    // Extract base64 data and mime type
-    const mimeMatch = imageBase64.match(/^data:(image\/[a-zA-Z]+);base64,/);
-    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
-    const base64Data = imageBase64.split(',')[1] || imageBase64;
+    // Cleanup base64 and determine mime type
+    let base64Data = "";
+    let mimeType = "image/jpeg";
 
-    console.log(`Detected MimeType: ${mimeType}`);
+    if (imageBase64.includes(';base64,')) {
+      const parts = imageBase64.split(';base64,');
+      mimeType = parts[0].split(':')[1];
+      base64Data = parts[1];
+    } else {
+      base64Data = imageBase64;
+    }
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    const response = await fetch(apiUrl, {
+    // Gemini only supports certain image types
+    const supportedMimes = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"];
+    if (!supportedMimes.includes(mimeType)) {
+      mimeType = "image/jpeg"; // Fallback
+    }
+
+    console.log(`AI Scan: Using mimeType ${mimeType}, Data length: ${base64Data.length}`);
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{
           parts: [
-            { text: "Identify this food item. Return ONLY a JSON object with keys: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only, no markdown." },
+            { text: "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. NO markdown, NO code blocks, just the JSON string." },
             { inline_data: { mime_type: mimeType, data: base64Data } }
           ]
         }]
       })
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API Error Status:", response.status, errorText);
-      return res.status(response.status).json({ error: "Gemini API Error: " + errorText });
+      console.error("Gemini API Error:", JSON.stringify(data));
+      return res.status(response.status).json({ error: "Gemini error: " + (data.error?.message || "Unknown") });
     }
 
-    const data = await response.json();
-    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    console.log("Gemini response text:", textResponse);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("Gemini Raw Text:", text);
 
-    if (!textResponse) throw new Error("Empty response from AI");
+    if (!text) throw new Error("AI returned empty content");
 
-    const jsonMatch = textResponse.match(/\{.*\}/s);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON: " + textResponse);
+    // Clean text to extract JSON
+    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = JSON.parse(jsonStr);
     
-    const result = JSON.parse(jsonMatch[0]);
     res.json(result);
   } catch (err) {
-    console.error("Internal AI Error:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("AI Analysis Backend Error:", err.message);
+    res.status(500).json({ error: "AI Error: " + err.message });
   }
 });
+
 
 
 // Basic health check
