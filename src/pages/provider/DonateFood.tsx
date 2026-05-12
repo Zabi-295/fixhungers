@@ -36,11 +36,19 @@ const DonateFood = () => {
     setIsAnalyzing(true);
     setAiDetected(false);
     try {
-      const { data, error } = await supabase.functions.invoke("analyze-food", {
-        body: { imageBase64: base64Image },
+      // Direct call to our new backend endpoint
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/ai/analyze-food`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64Image }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "AI Analysis failed");
+      }
+
+      const data = await response.json();
 
       if (data?.name) {
         setName(data.name);
@@ -151,7 +159,7 @@ const DonateFood = () => {
             </Badge>
           )}
         </h2>
-        <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageChange} />
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
 
         {imagePreview ? (
           <div className="relative inline-block">
@@ -170,17 +178,35 @@ const DonateFood = () => {
           </div>
         ) : (
           <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center py-12 cursor-pointer hover:border-primary/50 transition-colors"
+            className="border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center py-10 px-4 transition-all"
           >
             <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-              <Camera className="w-7 h-7 text-primary" />
+              <Sparkles className="w-7 h-7 text-primary" />
             </div>
-            <p className="font-semibold text-foreground text-sm">Click to take a photo</p>
-            <p className="text-xs text-muted-foreground">AI will auto-detect food name, category & shelf life</p>
-            <Button variant="outline" size="sm" className="mt-4 gap-2" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-              <Image className="w-4 h-4" /> Choose from Gallery
-            </Button>
+            <p className="font-semibold text-foreground text-center text-sm mb-1">AI Food Recognition</p>
+            <p className="text-xs text-muted-foreground text-center max-w-[250px] mb-6">Take a photo or upload an image, AI will detect everything!</p>
+            
+            <div className="flex flex-wrap justify-center gap-3 w-full max-w-xs">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="flex-1 gap-2 h-10" 
+                onClick={() => {
+                  // Mobile pe ye camera ka prompt dega aur PC pe file selector
+                  fileInputRef.current?.click();
+                }}
+              >
+                <Camera className="w-4 h-4" /> Take Photo
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 gap-2 h-10" 
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Image className="w-4 h-4" /> Gallery
+              </Button>
+            </div>
           </div>
         )}
       </div>

@@ -85,10 +85,61 @@ app.use('/api/auth', authRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/users', userRoutes);
 
+// Gemini AI Food Analysis Endpoint
+app.post('/api/ai/analyze-food', async (req, res) => {
+  const { imageBase64 } = req.body;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({ error: "GEMINI_API_KEY is not configured on server" });
+  }
+
+  if (!imageBase64) {
+    return res.status(400).json({ error: "imageBase64 is required" });
+  }
+
+  try {
+    // Remove base64 header if present (data:image/jpeg;base64,...)
+    const base64Data = imageBase64.split(',')[1] || imageBase64;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: "Identify this food item. Return ONLY a JSON object with keys: 'name' (common name), 'category' (one of: Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours' (estimated hours left). Example: {\"name\": \"Apple\", \"category\": \"Produce\", \"shelfLifeHours\": 72}. If you cannot identify it, return {\"error\": \"unknown\"}" },
+            { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    console.log("Gemini Raw Response:", JSON.stringify(data));
+
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!textResponse) throw new Error("No response from Gemini");
+
+    // Extract JSON from response (Gemini sometimes adds markdown blocks)
+    const jsonMatch = textResponse.match(/\{.*\}/s);
+    if (!jsonMatch) throw new Error("Invalid JSON in Gemini response");
+    
+    const result = JSON.parse(jsonMatch[0]);
+    if (result.error) throw new Error("Food not recognized");
+
+    res.json(result);
+  } catch (err) {
+    console.error("Gemini AI Error:", err.message);
+    res.status(500).json({ error: "AI analysis failed: " + err.message });
+  }
+});
+
 // Basic health check
 app.get('/', (req, res) => {
   res.send('Fix Hunger API is running...');
 });
+
 
 
 
