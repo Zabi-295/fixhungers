@@ -40,13 +40,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for Firebase auth changes
+    // 1. Initial restoration from localStorage token (Fastest)
+    const restoreSession = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await apiFetch('/auth/me');
+          setCurrentUser({ ...res, uid: res.id, emailVerified: true });
+        } catch (err) {
+          console.error("Session restoration failed:", err);
+          localStorage.removeItem('token');
+        }
+      }
+      setLoading(false);
+    };
+
+    restoreSession();
+
+    // 2. Listen for Firebase auth changes (Backup & Sync)
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // If email is verified, try to fetch MongoDB user data
-        if (firebaseUser.emailVerified) {
+        if (firebaseUser.emailVerified && !localStorage.getItem('token')) {
           try {
-            // We login to backend using the firebase UID to get our specific MongoDB JWT
             const res = await apiFetch('/auth/login', {
               method: 'POST',
               body: JSON.stringify({ firebaseUid: firebaseUser.uid, email: firebaseUser.email }),
@@ -54,22 +69,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('token', res.token);
             setCurrentUser({ ...res.user, uid: res.user.id, emailVerified: true });
           } catch (err) {
-            console.error("MongoDB fetch error:", err);
-            setCurrentUser(null);
+            console.error("Firebase sync error:", err);
           }
-        } else {
-          // User exists in firebase but not verified
-          setCurrentUser(null);
         }
       } else {
-        localStorage.removeItem('token');
-        setCurrentUser(null);
+        // Only clear if we don't have a manual token anymore
+        if (!localStorage.getItem('token')) {
+          setCurrentUser(null);
+        }
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
+
 
   const signup = async (email: string, password: string, name: string, role: "Provider" | "NGO") => {
     // 1. Create user in Firebase
