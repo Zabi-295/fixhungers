@@ -37,7 +37,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const sendNotification = (title: string, options?: NotificationOptions) => {
-    // 1. Show Browser Notification (if permission granted)
+    // 1. Play Sound
+    try {
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+      audio.play().catch(e => console.log("Sound play failed (interaction required):", e));
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
+
+    // 2. Show Browser Notification (if permission granted)
     if (permission === "granted") {
       new Notification(title, {
         icon: "/favicon.ico",
@@ -45,12 +53,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    // 2. Also show in-app Toast
+    // 3. Also show in-app Toast
     toast({
       title: title,
       description: options?.body || "New update available",
     });
   };
+
 
   return (
     <NotificationContext.Provider value={{ requestPermission, sendNotification, permission }}>
