@@ -255,23 +255,22 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const providerDonations = useMemo(() => {
-    console.log("Filtering provider donations. Current UID:", currentUser?.uid);
+    if (!currentUser?.uid) return [];
     return donations.filter((donation) => {
-      const match = donation.providerId === currentUser?.uid;
-      if (donation.name === "Test Food") {
-        console.log(`Donation: ${donation.name}, ProviderID: ${donation.providerId}, Match: ${match}`);
-      }
+      // Use both _id and id for compatibility
+      const match = donation.providerId === currentUser.uid || donation.providerId === currentUser.id;
       return match;
     });
-  }, [currentUser?.uid, donations]);
+  }, [currentUser, donations]);
 
-  const ngoAcceptedDonations = useMemo(
-    () =>
-      donations.filter((donation) =>
-        isDonationAcceptedByUser(donation, currentUser?.uid, ngoProfile.fullName)
-      ),
-    [currentUser?.uid, donations, ngoProfile.fullName]
-  );
+  const ngoAcceptedDonations = useMemo(() => {
+    if (!currentUser?.uid) return [];
+    return donations.filter((donation) =>
+      isDonationAcceptedByUser(donation, currentUser.uid, ngoProfile.fullName) ||
+      isDonationAcceptedByUser(donation, currentUser.id, ngoProfile.fullName)
+    );
+  }, [currentUser, donations, ngoProfile.fullName]);
+
 
   const addDonation = async (donation: Omit<Donation, "id" | "createdAt" | "status">) => {
     if (!currentUser) return;

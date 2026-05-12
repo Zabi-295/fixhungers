@@ -150,10 +150,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await signOut(auth);
+    setLoading(true);
+    try {
+      await signOut(auth);
+    } catch (e) {}
     localStorage.removeItem('token');
     setCurrentUser(null);
+    // Use replace to prevent back button issues
+    window.location.replace("/login");
   };
+
+
 
   const refreshUser = async () => {
     try {
