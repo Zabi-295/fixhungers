@@ -123,29 +123,40 @@ app.post('/api/ai/analyze-food', async (req, res) => {
 
     console.log(`AI Scan: Using mimeType ${mimeType}, Data length: ${base64Data.length}`);
     
-    // Trying gemini-1.5-flash-latest with v1beta which is often more resilient in different regions
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. NO markdown, NO code blocks, just the JSON string." },
-            { inline_data: { mime_type: mimeType, data: base64Data } }
-          ]
-        }]
-      })
-    });
+    // Use official SDK for better stability and automatic URL handling
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const data = await response.json();
+    const prompt = "Identify this food item. Return ONLY a JSON object with: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. NO markdown, NO code blocks, just the JSON string.";
+
+    const result_ai = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType
+        }
+      }
+    ]);
+
+    const response_ai = await result_ai.response;
+    const text = response_ai.text();
+    console.log("Gemini SDK Raw Text:", text);
+
+    if (!text) throw new Error("AI returned empty content");
+
+    // Clean text to extract JSON
+    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = JSON.parse(jsonStr);
     
-    if (!response.ok) {
-      console.error("Gemini API Error Detail:", JSON.stringify(data));
-      return res.status(response.status).json({ 
-        error: `Gemini error: ${data.error?.message || "Unknown error"}`,
-        detail: data.error
-      });
-    }
+    res.json(result);
+  } catch (err) {
+    console.error("AI Analysis Backend Error:", err.message);
+    res.status(500).json({ error: "AI Error: " + err.message });
+  }
+});
+
 
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
