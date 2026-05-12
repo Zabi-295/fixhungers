@@ -89,8 +89,30 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     }
 
     if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // Switch to Pro model for better reliability
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }, { apiVersion: "v1" });
+    
+    // SMART MODEL SELECTION
+    let modelToUse = "gemini-1.5-flash"; // Default
+    try {
+      console.log("AI Scan: Listing models to find best match...");
+      const response_models = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+      const data_models = await response_models.json();
+      const availableModels = data_models.models || [];
+      
+      // Try to find a compatible 1.5 model
+      const bestModel = availableModels.find(m => m.name.includes('gemini-1.5-flash') || m.name.includes('gemini-1.5-pro'));
+      if (bestModel) {
+        modelToUse = bestModel.name.split('/').pop();
+        console.log("AI Scan: Found best model:", modelToUse);
+      } else if (availableModels.length > 0) {
+        modelToUse = availableModels[0].name.split('/').pop();
+        console.log("AI Scan: Falling back to:", modelToUse);
+      }
+    } catch (e) {
+      console.error("Model listing failed, using default:", e.message);
+    }
+
+    const model = genAI.getGenerativeModel({ model: modelToUse }, { apiVersion: "v1beta" });
+
 
 
     const result_ai = await model.generateContent([
