@@ -89,8 +89,9 @@ app.post('/api/ai/analyze-food', async (req, res) => {
     }
 
     if (!genAI) genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // Using v1 which is generally faster and more stable
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
+    // Switch to Pro model for better reliability
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }, { apiVersion: "v1" });
+
 
     const result_ai = await model.generateContent([
       "Identify this food item. Return ONLY a JSON object with: 'name', 'category', 'shelfLifeHours'.",
