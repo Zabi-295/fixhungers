@@ -34,16 +34,20 @@ const DonateFood = () => {
   const [aiError, setAiError] = useState<string | null>(null);
 
   const analyzeFood = async (base64Image: string) => {
+    console.log("analyzeFood called, base64 length:", base64Image.length);
     setIsAnalyzing(true);
     setAiDetected(false);
     setAiError(null);
     try {
-      // Direct call to our new backend endpoint
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/ai/analyze-food`, {
+      const apiUrl = `${import.meta.env.VITE_API_URL || '/api'}/ai/analyze-food`;
+      console.log("Calling API:", apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: base64Image }),
       });
+
 
       if (!response.ok) {
         const errorData = await response.json();
