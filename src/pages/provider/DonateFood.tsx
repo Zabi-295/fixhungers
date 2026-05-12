@@ -80,43 +80,55 @@ const DonateFood = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log("File selected:", file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
         const img = new Image();
-        img.src = reader.result as string;
         img.onload = () => {
-          // Resize image to max 800px width/height to keep payload small
+          console.log("Image loaded for resizing");
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
+          const MAX_SIZE = 800;
 
           if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
             }
           } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
             }
           }
 
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          
-          const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7); // Compress to 70% quality
-          setImagePreview(resizedBase64);
-          analyzeFood(resizedBase64);
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            setImagePreview(resizedBase64);
+            analyzeFood(resizedBase64);
+          } else {
+            console.error("Could not get canvas context");
+            // Fallback to original if canvas fails
+            setImagePreview(reader.result as string);
+            analyzeFood(reader.result as string);
+          }
         };
+        img.onerror = (err) => {
+          console.error("Image loading error:", err);
+          setImagePreview(reader.result as string);
+          analyzeFood(reader.result as string);
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
   };
+
 
 
   const handleSubmit = async () => {
