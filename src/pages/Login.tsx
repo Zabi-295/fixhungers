@@ -38,7 +38,9 @@ const Login = () => {
       }
 
       toast({ title: "Welcome back!", description: "Login successful." });
-      if (result.role === "Provider") {
+      if (result.role === "Admin") {
+        navigate("/admin/dashboard");
+      } else if (result.role === "Provider") {
         navigate("/provider/dashboard");
       } else if (result.role === "NGO") {
         navigate("/ngo/dashboard");
@@ -47,6 +49,7 @@ const Login = () => {
       } else {
         navigate("/ngo/dashboard");
       }
+
     } catch (err: any) {
       const msg = err.code === "auth/user-not-found"
         ? "No account found with this email."
