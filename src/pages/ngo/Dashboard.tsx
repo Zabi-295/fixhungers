@@ -9,10 +9,14 @@ import { calculateDistanceKm, getExpiryState, isDonationAcceptedByUser, getNumer
 
 const MAX_RADIUS_KM = 50;
 import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationContext";
+
 
 const Dashboard = () => {
   const { donations, acceptDonation, ngoProfile, notifications, markNotificationRead, clearNotifications } = useDonations();
+  const { requestPermission, permission } = useNotifications();
   const { currentUser, userProfile } = useAuth();
+
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
@@ -125,6 +129,13 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="max-h-64 overflow-y-auto">
+                {permission === "default" && (
+                  <div className="p-4 bg-primary/5 border-b border-border">
+                    <p className="text-xs text-foreground font-semibold mb-2">Real-time Alerts</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">Get notified on your phone/laptop when food is donated near you.</p>
+                    <Button size="sm" className="w-full text-[10px] h-8" onClick={requestPermission}>Enable Notifications</Button>
+                  </div>
+                )}
                 {notifications.length === 0 ? (
                   <div className="p-4 text-center text-xs text-muted-foreground">No notifications yet</div>
                 ) : (
@@ -149,6 +160,7 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
       </div>
 
       {/* Title + Filter */}

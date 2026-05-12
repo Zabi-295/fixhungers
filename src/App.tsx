@@ -30,6 +30,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import { DonationProvider } from "./context/DonationContext";
 import { AdminProvider } from "./context/AdminContext";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
+
 
 import { ThemeProvider } from "./components/ThemeProvider";
 
@@ -43,7 +45,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+        <NotificationProvider>
         <DonationProvider>
+
           <AdminProvider>
             <Routes>
               <Route path="/" element={<Signup />} />
@@ -73,7 +77,9 @@ const App = () => (
             </Routes>
           </AdminProvider>
         </DonationProvider>
+        </NotificationProvider>
         </AuthProvider>
+
       </BrowserRouter>
     </TooltipProvider>
     </ThemeProvider>

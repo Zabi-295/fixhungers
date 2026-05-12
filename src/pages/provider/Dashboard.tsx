@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Donation } from "@/context/DonationContext";
 import { formatDonationShortDate } from "@/lib/donation-utils";
+import { useNotifications } from "@/context/NotificationContext";
+import { Bell } from "lucide-react";
+
 
 const statusColor: Record<string, string> = {
   Pending: "bg-amber-100 text-amber-700",
@@ -18,7 +21,9 @@ const statusColor: Record<string, string> = {
 
 const Dashboard = () => {
   const { providerDonations, deleteDonation, updateDonationStatus } = useDonations();
+  const { requestPermission, permission } = useNotifications();
   const navigate = useNavigate();
+
 
   const donations = providerDonations;
 
@@ -40,7 +45,24 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+      {/* Notification Banner */}
+      {permission === "default" && (
+        <div className="bg-primary/10 border border-primary/20 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">Enable Real-time Updates</p>
+              <p className="text-xs text-muted-foreground">Get notified on your mobile/PC when an NGO accepts your food.</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={requestPermission} className="w-full sm:w-auto text-xs">Enable Notifications</Button>
+        </div>
+      )}
+
       {/* Header */}
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Provider Dashboard</h1>

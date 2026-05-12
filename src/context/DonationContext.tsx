@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import { useAuth, type UserProfile as AuthUserProfile } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationContext";
 import apiFetch from "@/lib/api";
+
 import {
   calculateDistanceKm,
   isDonationAcceptedByUser,
@@ -136,8 +138,11 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ProviderProfile>(buildDefaultProfile(userProfile));
   const [ngoProfile, setNGOProfile] = useState<NGOProfile>(buildDefaultNGOProfile(userProfile));
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
+  const { sendNotification } = useNotifications();
+  const [prevDonations, setPrevDonations] = useState<Donation[]>([]);
 
   const fetchDonations = async () => {
+
     try {
       const items = await apiFetch('/donations');
       const normalizedDonations = items
@@ -172,12 +177,34 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       console.log("Fetched donations count:", normalizedDonations.length);
-      if (normalizedDonations.length > 0) {
-        console.log("Current User UID:", currentUser?.uid);
-        console.log("Example Donation providerId:", normalizedDonations[0].providerId);
+      
+      // Trigger notifications for new or changed donations
+      if (prevDonations.length > 0) {
+        normalizedDonations.forEach(donation => {
+          const prev = prevDonations.find(p => p.id === donation.id);
+          
+          // Case 1: New Donation (For NGOs)
+          if (!prev && donation.status === "Pending" && userProfile?.role === "NGO") {
+             sendNotification("New Food Donation Nearby!", {
+               body: `${donation.name} (${donation.quantity} ${donation.unit}) is available at ${donation.providerName}.`,
+               tag: donation.id
+             });
+          }
+          
+          // Case 2: Status Change to Accepted (For Providers)
+          if (prev && prev.status === "Pending" && donation.status === "Accepted" && userProfile?.role === "Provider" && donation.providerId === currentUser?.uid) {
+            sendNotification("Donation Accepted!", {
+              body: `Your donation of ${donation.name} has been accepted by ${donation.acceptedBy}.`,
+              tag: donation.id
+            });
+          }
+        });
       }
+
+      setPrevDonations(normalizedDonations);
       setDonations(normalizedDonations);
     } catch (err) {
+
       console.error("Failed to fetch donations:", err);
     }
   };
