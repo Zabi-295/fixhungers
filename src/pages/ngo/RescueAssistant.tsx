@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useDonations } from "@/context/DonationContext";
 import { Send, Mic, Search, Settings, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import apiFetch from "@/lib/api";
+
 
 interface Message {
   id: string;
@@ -97,15 +99,13 @@ const RescueAssistant = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/ai/chat`, {
+      const data = await apiFetch('/ai/chat', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: currentInput,
           context: { ngoProfile, donations }
         }),
       });
-      const data = await response.json();
       
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
@@ -114,6 +114,7 @@ const RescueAssistant = () => {
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
+
       console.error("Chat error:", err);
       const assistantMsg: Message = {
         id: crypto.randomUUID(),
