@@ -30,6 +30,7 @@ const Login = () => {
     setError("");
     try {
       const result = await login(email, password);
+      console.log("Login Result Role:", result.role); // Debugging ke liye
       
       if (!result.emailVerified) {
         setError("Please verify your email first. Check your inbox for the verification link.");
@@ -38,17 +39,22 @@ const Login = () => {
       }
 
       toast({ title: "Welcome back!", description: "Login successful." });
-      if (result.role === "Admin") {
+      
+      const userRole = result.role?.toLowerCase();
+      
+      if (userRole === "admin") {
+        console.log("Navigating to Admin Dashboard...");
         navigate("/admin/dashboard");
-      } else if (result.role === "Provider") {
+      } else if (userRole === "provider") {
         navigate("/provider/dashboard");
-      } else if (result.role === "NGO") {
+      } else if (userRole === "ngo") {
         navigate("/ngo/dashboard");
       } else if (role === "provider") {
         navigate("/provider/dashboard");
       } else {
         navigate("/ngo/dashboard");
       }
+
 
     } catch (err: any) {
       const msg = err.code === "auth/user-not-found"
