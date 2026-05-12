@@ -99,41 +99,54 @@ app.post('/api/ai/analyze-food', async (req, res) => {
   }
 
   try {
-    // Remove base64 header if present (data:image/jpeg;base64,...)
+    console.log("AI Scan Request received");
+    
+    // Extract base64 data and mime type
+    const mimeMatch = imageBase64.match(/^data:(image\/[a-zA-Z]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
     const base64Data = imageBase64.split(',')[1] || imageBase64;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    console.log(`Detected MimeType: ${mimeType}`);
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{
           parts: [
-            { text: "Identify this food item. Return ONLY a JSON object with keys: 'name' (common name), 'category' (one of: Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours' (estimated hours left). Example: {\"name\": \"Apple\", \"category\": \"Produce\", \"shelfLifeHours\": 72}. If you cannot identify it, return {\"error\": \"unknown\"}" },
-            { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+            { text: "Identify this food item. Return ONLY a JSON object with keys: 'name', 'category' (Produce, Bakery, Dairy, Prepared Meals, Meat, Beverages, Grains, Other), and 'shelfLifeHours'. Respond with plain JSON only, no markdown." },
+            { inline_data: { mime_type: mimeType, data: base64Data } }
           ]
         }]
       })
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API Error Status:", response.status, errorText);
+      return res.status(response.status).json({ error: "Gemini API Error: " + errorText });
+    }
+
     const data = await response.json();
-    console.log("Gemini Raw Response:", JSON.stringify(data));
-
     const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!textResponse) throw new Error("No response from Gemini");
+    
+    console.log("Gemini response text:", textResponse);
 
-    // Extract JSON from response (Gemini sometimes adds markdown blocks)
+    if (!textResponse) throw new Error("Empty response from AI");
+
     const jsonMatch = textResponse.match(/\{.*\}/s);
-    if (!jsonMatch) throw new Error("Invalid JSON in Gemini response");
+    if (!jsonMatch) throw new Error("AI did not return valid JSON: " + textResponse);
     
     const result = JSON.parse(jsonMatch[0]);
-    if (result.error) throw new Error("Food not recognized");
-
     res.json(result);
   } catch (err) {
-    console.error("Gemini AI Error:", err.message);
-    res.status(500).json({ error: "AI analysis failed: " + err.message });
+    console.error("Internal AI Error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
 
 // Basic health check
 app.get('/', (req, res) => {
