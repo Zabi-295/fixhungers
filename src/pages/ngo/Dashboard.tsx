@@ -292,10 +292,15 @@ const Dashboard = () => {
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">🏆</div>
           <div>
             <div className="text-[10px] text-primary uppercase font-semibold">Ranking</div>
-            <div className="text-2xl font-bold text-foreground">#{Math.max(1, 15 - completedPickups)}</div>
-            <div className="text-xs text-muted-foreground">In {ngoProfile.location} Area</div>
+            <div className="text-2xl font-bold text-foreground">
+              {ngoProfile.rank > 0 ? `#${ngoProfile.rank}` : "—"}
+            </div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              Rating: {ngoProfile.rating ? ngoProfile.rating.toFixed(1) : "0.0"} ⭐ ({ngoProfile.reviewCount})
+            </div>
           </div>
         </div>
+
         <div className="bg-card rounded-xl border border-border p-5 flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">⏰</div>
           <div>

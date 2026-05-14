@@ -36,7 +36,13 @@ export interface Donation {
   acceptedById?: string;
   acceptedAt?: string;
   distance?: string;
+  review?: {
+    rating: number;
+    comment: string;
+    createdAt: string;
+  };
 }
+
 
 export interface Notification {
   id: string;
@@ -72,7 +78,11 @@ export interface NGOProfile {
   newRescueAlerts: boolean;
   pushNotifications: boolean;
   weeklyReport: boolean;
+  rating: number;
+  reviewCount: number;
+  rank: number;
 }
+
 
 interface DonationContextType {
   donations: Donation[];
@@ -117,7 +127,11 @@ const buildDefaultNGOProfile = (userProfile?: AuthUserProfile | null): NGOProfil
   newRescueAlerts: true,
   pushNotifications: true,
   weeklyReport: false,
+  rating: userProfile?.rating || 0,
+  reviewCount: userProfile?.reviewCount || 0,
+  rank: userProfile?.rank || 0,
 });
+
 
 const categoryEmojis: Record<string, string> = {
   Produce: "🍎",
@@ -233,9 +247,13 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
         setNGOProfile({
           ...buildDefaultNGOProfile(userProfile),
           ...userProfile.profile,
-          fullName: userProfile.profile.fullName || userProfile.name
+          fullName: userProfile.profile?.fullName || userProfile.name,
+          rating: userProfile.rating || 0,
+          reviewCount: userProfile.reviewCount || 0,
+          rank: userProfile.rank || 0,
         });
       }
+
     }
   }, [currentUser, userProfile]);
 

@@ -53,7 +53,11 @@ const UserSchema = new mongoose.Schema({
   firebaseUid: {
     type: String,
     unique: true
-  }
+  },
+  rating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  rank: { type: Number, default: 0 }
+
 });
 
 module.exports = mongoose.model('User', UserSchema);

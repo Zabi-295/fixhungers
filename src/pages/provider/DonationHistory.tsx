@@ -7,6 +7,9 @@ import { useState } from "react";
 import { useDonations } from "@/context/DonationContext";
 import { useNavigate } from "react-router-dom";
 import { formatDonationShortDate } from "@/lib/donation-utils";
+import apiFetch from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
+
 
 const tabs = ["All Donations", "Pending", "Completed"];
 
@@ -45,6 +48,33 @@ const DonationHistory = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "donations.csv"; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { fetchDonations } = useDonations();
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const submitReview = async () => {
+    if (!selectedDonation) return;
+    setSubmitting(true);
+    try {
+      await apiFetch(`/donations/${selectedDonation.id}/review`, {
+        method: "POST",
+        body: JSON.stringify({ rating, comment })
+      });
+      toast({ title: "Review Submitted!", description: "Thank you for your feedback. NGO ranking updated." });
+      await fetchDonations();
+      setSelectedDonation(null);
+      setRating(5);
+      setComment("");
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to submit review.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -136,9 +166,26 @@ const DonationHistory = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => deleteDonation(d.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                       {(d.status === "Completed" || d.status === "Collected") && !d.review && (
+                        <Button 
+                          size="sm" 
+                          className="h-8 text-[10px] bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+                          onClick={() => setSelectedDonation(d)}
+                        >
+                          ⭐ Rate NGO
+                        </Button>
+                      )}
+                      {d.review && (
+                        <div className="flex items-center gap-1 text-primary">
+                          <span className="text-xs font-bold">{d.review.rating}</span>
+                          <span className="text-[10px]">⭐</span>
+                        </div>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => deleteDonation(d.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -160,8 +207,69 @@ const DonationHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {selectedDonation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-md rounded-2xl border border-border shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-foreground mb-1">Rate {selectedDonation.acceptedBy}</h2>
+            <p className="text-sm text-muted-foreground mb-6">Your feedback helps us rank NGOs and ensure quality rescues.</p>
+
+            <div className="space-y-6">
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">Your Rating</p>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      className="text-3xl transition-transform hover:scale-125 active:scale-95"
+                    >
+                      <span className={ (hoverRating || rating) >= star ? "text-primary" : "text-muted opacity-40" }>★</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {rating === 5 ? "Excellent!" : rating === 4 ? "Very Good" : rating === 3 ? "Good" : rating === 2 ? "Fair" : "Poor"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-primary">Review Comment</label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Tell us about the pickup experience..."
+                  className="w-full h-24 p-3 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 rounded-xl"
+                  onClick={() => setSelectedDonation(null)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 rounded-xl bg-primary text-primary-foreground"
+                  onClick={submitReview}
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default DonationHistory;
+

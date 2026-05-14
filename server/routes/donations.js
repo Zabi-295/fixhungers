@@ -70,4 +70,52 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// @route    POST api/donations/:id/review
+// @desc     Add a review for an NGO
+router.post('/:id/review', auth, async (req, res) => {
+  const { rating, comment } = req.body;
+  const User = require('../models/User');
+
+  try {
+    let donation = await Donation.findById(req.params.id);
+    if (!donation) return res.status(404).json({ msg: 'Donation not found' });
+    if (!donation.acceptedById) return res.status(400).json({ msg: 'Donation was not accepted by any NGO' });
+
+    // 1. Save review to donation
+    donation.review = {
+      rating,
+      comment,
+      createdAt: new Date()
+    };
+    await donation.save();
+
+    // 2. Recalculate NGO Rating
+    const ngoId = donation.acceptedById;
+    const ngoDonations = await Donation.find({ acceptedById: ngoId, 'review.rating': { $exists: true } });
+    
+    const totalRating = ngoDonations.reduce((acc, d) => acc + d.review.rating, 0);
+    const avgRating = totalRating / ngoDonations.length;
+
+    await User.findByIdAndUpdate(ngoId, {
+      rating: avgRating,
+      reviewCount: ngoDonations.length
+    });
+
+    // 3. Recalculate ALL NGO Ranks
+    const ngos = await User.find({ role: 'NGO' }).sort({ rating: -1, reviewCount: -1 });
+    
+    // Update ranks based on sorted order
+    const rankPromises = ngos.map((ngo, index) => {
+      return User.findByIdAndUpdate(ngo._id, { rank: index + 1 });
+    });
+    await Promise.all(rankPromises);
+
+    res.json({ msg: 'Review submitted and ranking updated', donation });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
+
