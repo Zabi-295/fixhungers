@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { useAdmin, RegisteredUser } from "@/context/AdminContext";
+
 import { useDonations, Donation } from "@/context/DonationContext";
-import { Search, UserPlus, Pencil, Trash2, Users, CheckCircle, ArrowLeft, X, MapPin, Package, Calendar, Clock } from "lucide-react";
+import { Search, UserPlus, Pencil, Trash2, Users, CheckCircle, ArrowLeft, X, MapPin, Package, Calendar, Clock, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
 import { Link } from "react-router-dom";
 import { getNumericQuantity } from "@/lib/donation-utils";
 
@@ -181,123 +185,179 @@ const UserManagement = () => {
 
       {/* User Details Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-2xl max-h-[90vh] rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
+          <div className="bg-card w-full max-w-3xl max-h-[90vh] rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
             {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+            <div className="p-6 border-b border-border flex items-center justify-between bg-primary/5">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary border border-primary/20">
                   {selectedUser.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">{selectedUser.name}</h2>
-                  <p className="text-sm text-muted-foreground">{selectedUser.email} • {selectedUser.role}</p>
+                  <h2 className="text-2xl font-bold text-foreground">{selectedUser.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                      selectedUser.role === 'Provider' ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-500'
+                    }`}>
+                      {selectedUser.role}
+                    </span>
+                    <span className="text-sm text-muted-foreground">•</span>
+                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-muted rounded-full transition">
+              <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-muted rounded-full transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto space-y-6">
-              {/* Profile Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
-                  <MapPin className="w-4 h-4 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Location</p>
-                    <p className="text-sm">{selectedUser.location || "Not specified"}</p>
-                  </div>
+            <div className="p-6 overflow-y-auto space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col items-center justify-center text-center">
+                  <Package className="w-5 h-5 text-primary mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{userDonations.length}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">
+                    Total {selectedUser.role === 'Provider' ? 'Donations' : 'Pickups'}
+                  </p>
                 </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
-                  <Calendar className="w-4 h-4 text-primary mt-0.5" />
-                  <div>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Joined On</p>
-                    <p className="text-sm">{new Date(selectedUser.registeredAt).toLocaleDateString()}</p>
-                  </div>
+                <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col items-center justify-center text-center">
+                  <TrendingUp className="w-5 h-5 text-green-500 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">{totalQuantity.toFixed(1)}kg</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Total Weight</p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col items-center justify-center text-center">
+                  <CheckCircle className="w-5 h-5 text-blue-500 mb-2" />
+                  <p className="text-2xl font-bold text-foreground">
+                    {Math.round((userDonations.filter(d => d.status === 'Completed').length / (userDonations.length || 1)) * 100)}%
+                  </p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Completion Rate</p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col items-center justify-center text-center">
+                  <Calendar className="w-5 h-5 text-amber-500 mb-2" />
+                  <p className="text-lg font-bold text-foreground leading-tight">
+                    {new Date(selectedUser.registeredAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Member Since</p>
                 </div>
               </div>
 
-              {/* Stats Summary */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <p className="text-2xl font-bold text-primary">{userDonations.length}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">
-                    {selectedUser.role === "Provider" ? "Donations" : "Pickups"}
-                  </p>
+              {/* User Details Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Users className="w-4 h-4 text-primary" /> Profile Details
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Address</span>
+                      <span className="text-sm font-medium">{selectedUser.location || "Lahore, Pakistan"}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
+                      <span className="text-xs text-muted-foreground flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> Account Status</span>
+                      <Badge className={selectedUser.status ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}>
+                        {selectedUser.status ? "ACTIVE" : "INACTIVE"}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <p className="text-2xl font-bold text-primary">{totalQuantity.toFixed(1)}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Items</p>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <p className="text-2xl font-bold text-primary">{userDonations.filter(d => d.status === "Completed").length}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Completed</p>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4 text-primary rotate-180" /> Recent Activity
+                  </h3>
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                    <p className="text-sm text-foreground font-medium mb-1">Last Interaction</p>
+                    <p className="text-xs text-muted-foreground">
+                      {userDonations.length > 0 
+                        ? `Handled ${userDonations[0].name} on ${new Date(userDonations[0].createdAt).toLocaleDateString()}`
+                        : "No recent activity recorded."}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* History Table */}
-              <div>
-                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> 
-                  {selectedUser.role === "Provider" ? "Donation History" : "Pickup History"}
-                </h3>
-                <div className="border border-border rounded-xl overflow-hidden">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold">Item</th>
-                        <th className="px-4 py-3 font-semibold">Status</th>
-                        <th className="px-4 py-3 font-semibold">Date</th>
-                        <th className="px-4 py-3 font-semibold">{selectedUser.role === "Provider" ? "NGO" : "Provider"}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {userDonations.length === 0 ? (
-                        <tr><td colSpan={4} className="text-center py-8 text-muted-foreground italic">No history found</td></tr>
-                      ) : (
-                        userDonations.map(d => (
-                          <tr key={d.id} className="hover:bg-muted/30">
-                            <td className="px-4 py-3">
-                              <span className="mr-2">{d.emoji}</span>
-                              <span className="font-medium">{d.name}</span>
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                                d.status === 'Completed' ? 'bg-green-100 text-green-700' : 
-                                d.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
-                              }`}>
-                                {d.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              {new Date(d.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground">
-                              {selectedUser.role === "Provider" ? (d.acceptedBy || "—") : (d.providerName || "—")}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" /> 
+                    {selectedUser.role === 'Provider' ? 'Donation' : 'Pickup'} History
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground px-2 py-1 bg-muted rounded-md">Showing last {userDonations.length} records</span>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-muted/50 border-b border-border">
+                        <tr>
+                          <th className="px-4 py-3 font-bold text-primary uppercase">Item Details</th>
+                          <th className="px-4 py-3 font-bold text-primary uppercase">Status</th>
+                          <th className="px-4 py-3 font-bold text-primary uppercase">Date</th>
+                          <th className="px-4 py-3 font-bold text-primary uppercase">{selectedUser.role === 'Provider' ? 'Accepted By' : 'Donated By'}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {userDonations.length === 0 ? (
+                          <tr><td colSpan={4} className="text-center py-12 text-muted-foreground italic bg-card">No records found for this user.</td></tr>
+                        ) : (
+                          userDonations.map(d => (
+                            <tr key={d.id} className="hover:bg-primary/5 transition-colors bg-card">
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xl bg-muted w-8 h-8 rounded-lg flex items-center justify-center">{d.emoji}</span>
+                                  <div>
+                                    <p className="font-bold text-foreground">{d.name}</p>
+                                    <p className="text-[10px] text-muted-foreground">{d.category} • {d.quantity} {d.unit}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${
+                                  d.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 
+                                  d.status === 'Accepted' ? 'bg-blue-500/10 text-blue-500' : 
+                                  d.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' : 'bg-muted text-muted-foreground'
+                                }`}>
+                                  {d.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-muted-foreground font-medium">
+                                {new Date(d.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold">
+                                    {(selectedUser.role === 'Provider' ? d.acceptedBy : d.providerName)?.charAt(0) || '?'}
+                                  </div>
+                                  <span className="font-medium text-foreground">
+                                    {selectedUser.role === 'Provider' ? (d.acceptedBy || "Not accepted yet") : (d.providerName || "Unknown")}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-border bg-muted/10 flex justify-end gap-3">
+            <div className="p-6 border-t border-border bg-muted/20 flex justify-end gap-3">
               <button 
                 onClick={() => setSelectedUser(null)}
-                className="px-6 py-2 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition"
+                className="px-8 py-2.5 rounded-xl bg-foreground text-background font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition shadow-lg"
               >
-                Done
+                Close Detailed View
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
