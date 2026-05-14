@@ -1,16 +1,19 @@
-import { useState } from "react";
-import { useAdmin } from "@/context/AdminContext";
-import { Search, UserPlus, Pencil, Trash2, Users, CheckCircle, ArrowLeft } from "lucide-react";
+import { useAdmin, RegisteredUser } from "@/context/AdminContext";
+import { useDonations, Donation } from "@/context/DonationContext";
+import { Search, UserPlus, Pencil, Trash2, Users, CheckCircle, ArrowLeft, X, MapPin, Package, Calendar, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getNumericQuantity } from "@/lib/donation-utils";
 
 const UserManagement = () => {
   const { users, toggleUserStatus, deleteUser, addUser } = useAdmin();
+  const { donations } = useDonations();
   const [filter, setFilter] = useState<"all" | "Provider" | "NGO">("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<"Provider" | "NGO">("Provider");
+  const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
 
   const filtered = users.filter((u) => {
     if (filter !== "all" && u.role !== filter) return false;
@@ -32,6 +35,16 @@ const UserManagement = () => {
     setNewEmail("");
     setShowAdd(false);
   };
+
+  const userDonations = selectedUser?.role === "Provider" 
+    ? donations.filter(d => d.providerId === selectedUser.id)
+    : selectedUser?.role === "NGO" 
+      ? donations.filter(d => d.acceptedById === selectedUser.id)
+      : [];
+
+  const totalQuantity = userDonations.reduce((acc, d) => {
+    return acc + getNumericQuantity(d.quantity);
+  }, 0);
 
   return (
     <div>
@@ -115,7 +128,11 @@ const UserManagement = () => {
               <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No users found</td></tr>
             )}
             {filtered.map((u) => (
-              <tr key={u.id} className="border-b border-border hover:bg-muted/30 transition">
+              <tr 
+                key={u.id} 
+                className="border-b border-border hover:bg-muted/30 transition cursor-pointer"
+                onClick={() => setSelectedUser(u)}
+              >
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground uppercase">
@@ -162,24 +179,125 @@ const UserManagement = () => {
         <div className="mt-3 text-xs text-primary">Showing {filtered.length} of {users.length} users</div>
       </div>
 
-      {/* Bottom stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 sm:mt-6">
-        <div className="bg-card rounded-xl border border-border p-5">
-          <p className="text-[10px] text-muted-foreground uppercase font-semibold">New Registrations</p>
-          <p className="text-2xl font-bold text-foreground">+{newRegs}</p>
-          <p className="text-xs text-primary">↗ last 30 days</p>
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-2xl max-h-[90vh] rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                  {selectedUser.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">{selectedUser.name}</h2>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email} • {selectedUser.role}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-muted rounded-full transition">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Profile Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                  <MapPin className="w-4 h-4 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Location</p>
+                    <p className="text-sm">{selectedUser.location || "Not specified"}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                  <Calendar className="w-4 h-4 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Joined On</p>
+                    <p className="text-sm">{new Date(selectedUser.registeredAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Summary */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-2xl font-bold text-primary">{userDonations.length}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">
+                    {selectedUser.role === "Provider" ? "Donations" : "Pickups"}
+                  </p>
+                </div>
+                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-2xl font-bold text-primary">{totalQuantity.toFixed(1)}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Items</p>
+                </div>
+                <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-2xl font-bold text-primary">{userDonations.filter(d => d.status === "Completed").length}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Completed</p>
+                </div>
+              </div>
+
+              {/* History Table */}
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> 
+                  {selectedUser.role === "Provider" ? "Donation History" : "Pickup History"}
+                </h3>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Item</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold">Date</th>
+                        <th className="px-4 py-3 font-semibold">{selectedUser.role === "Provider" ? "NGO" : "Provider"}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {userDonations.length === 0 ? (
+                        <tr><td colSpan={4} className="text-center py-8 text-muted-foreground italic">No history found</td></tr>
+                      ) : (
+                        userDonations.map(d => (
+                          <tr key={d.id} className="hover:bg-muted/30">
+                            <td className="px-4 py-3">
+                              <span className="mr-2">{d.emoji}</span>
+                              <span className="font-medium">{d.name}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                d.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                                d.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                              }`}>
+                                {d.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">
+                              {new Date(d.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">
+                              {selectedUser.role === "Provider" ? (d.acceptedBy || "—") : (d.providerName || "—")}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-border bg-muted/10 flex justify-end gap-3">
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="px-6 py-2 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition"
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Verified Providers</p>
-          <p className="text-2xl font-bold text-foreground">{providers}</p>
-          <p className="text-xs text-muted-foreground">Total active food sources</p>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <p className="text-[10px] text-muted-foreground uppercase font-semibold">Active Couriers</p>
-          <p className="text-2xl font-bold text-foreground">{ngos}</p>
-          <p className="text-xs text-muted-foreground">Online delivery volunteers</p>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
