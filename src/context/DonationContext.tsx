@@ -372,7 +372,7 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
       body: JSON.stringify({
         acceptedAt: new Date().toISOString(),
         acceptedBy: ngoName,
-        acceptedById: currentUser.uid,
+        acceptedById: userProfile?._id || currentUser?.uid,
         status: "Accepted",
       }),
     });

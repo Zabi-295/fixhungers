@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Donation = require('../models/Donation.js');
+const User = require('../models/User');
 const auth = require('../middleware/auth.js');
+const mongoose = require('mongoose');
+
+// @route    GET api/donations
+// ... (rest of the code)
+
 
 // @route    GET api/donations
 // @desc     Get all donations
@@ -74,37 +80,52 @@ router.delete('/:id', auth, async (req, res) => {
 // @desc     Add a review for an NGO
 router.post('/:id/review', auth, async (req, res) => {
   const { rating, comment } = req.body;
-  const User = require('../models/User');
 
   try {
     let donation = await Donation.findById(req.params.id);
     if (!donation) return res.status(404).json({ msg: 'Donation not found' });
-    if (!donation.acceptedById) return res.status(400).json({ msg: 'Donation was not accepted by any NGO' });
+    
+    const ngoId = donation.acceptedById;
+    if (!ngoId) return res.status(400).json({ msg: 'Donation was not accepted by any NGO' });
 
     // 1. Save review to donation
     donation.review = {
-      rating,
+      rating: Number(rating),
       comment,
       createdAt: new Date()
     };
     await donation.save();
 
     // 2. Recalculate NGO Rating
-    const ngoId = donation.acceptedById;
-    const ngoDonations = await Donation.find({ acceptedById: ngoId, 'review.rating': { $exists: true } });
-    
-    const totalRating = ngoDonations.reduce((acc, d) => acc + d.review.rating, 0);
-    const avgRating = totalRating / ngoDonations.length;
+    // Smart lookup: Check if ngoId is a valid MongoDB ObjectId or a Firebase UID
+    let ngoUser = null;
+    if (mongoose.Types.ObjectId.isValid(ngoId)) {
+      ngoUser = await User.findById(ngoId);
+    }
+    if (!ngoUser) {
+      ngoUser = await User.findOne({ firebaseUid: ngoId });
+    }
 
-    await User.findByIdAndUpdate(ngoId, {
-      rating: avgRating,
-      reviewCount: ngoDonations.length
-    });
+    if (ngoUser) {
+      const actualNgoId = ngoUser._id;
+      const ngoDonations = await Donation.find({ 
+        acceptedById: { $in: [actualNgoId, ngoUser.firebaseUid] }, 
+        'review.rating': { $exists: true } 
+      });
+      
+      const totalRating = ngoDonations.reduce((acc, d) => acc + d.review.rating, 0);
+      const avgRating = totalRating / ngoDonations.length;
+
+      await User.findByIdAndUpdate(actualNgoId, {
+        rating: avgRating,
+        reviewCount: ngoDonations.length
+      });
+    }
 
     // 3. Recalculate ALL NGO Ranks
+
     const ngos = await User.find({ role: 'NGO' }).sort({ rating: -1, reviewCount: -1 });
     
-    // Update ranks based on sorted order
     const rankPromises = ngos.map((ngo, index) => {
       return User.findByIdAndUpdate(ngo._id, { rank: index + 1 });
     });
@@ -112,10 +133,11 @@ router.post('/:id/review', auth, async (req, res) => {
 
     res.json({ msg: 'Review submitted and ranking updated', donation });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error("Review Error:", err.message);
+    res.status(500).send('Server Error: ' + err.message);
   }
 });
 
 module.exports = router;
+
 
