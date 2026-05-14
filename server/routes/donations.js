@@ -109,7 +109,7 @@ router.post('/:id/review', auth, async (req, res) => {
     if (ngoUser) {
       const actualNgoId = ngoUser._id;
       const ngoDonations = await Donation.find({ 
-        acceptedById: { $in: [actualNgoId, ngoUser.firebaseUid] }, 
+        acceptedById: { $in: [actualNgoId, ngoUser.firebaseUid, String(actualNgoId)] }, 
         'review.rating': { $exists: true } 
       });
       

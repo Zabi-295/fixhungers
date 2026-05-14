@@ -21,7 +21,7 @@ const DonationSchema = new mongoose.Schema({
   providerLat: { type: Number },
   providerLng: { type: Number },
   acceptedBy: { type: String },
-  acceptedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  acceptedById: { type: mongoose.Schema.Types.Mixed, ref: 'User' },
   acceptedAt: { type: String },
   review: {
     rating: { type: Number, min: 1, max: 5 },
