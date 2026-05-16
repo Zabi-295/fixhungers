@@ -86,30 +86,7 @@ const UserManagement = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">User Directory</h1>
           <p className="text-sm text-muted-foreground">Manage and oversee all system stakeholders.</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-foreground text-background font-medium text-sm hover:opacity-90 transition w-full sm:w-auto justify-center">
-          <UserPlus className="w-4 h-4" /> Add New User
-        </button>
       </div>
-
-      {/* Add User Modal */}
-      {showAdd && (
-        <div className="bg-card rounded-xl border border-border p-5 mb-6 space-y-3">
-          <h3 className="font-semibold text-foreground">Add New User</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full Name" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email" type="email" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" type="text" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none">
-              <option value="Provider">Provider</option>
-              <option value="NGO">NGO</option>
-            </select>
-          </div>
-          <div className="flex gap-2 mt-2">
-            <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Add User</button>
-            <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-lg border border-border text-sm">Cancel</button>
-          </div>
-        </div>
-      )}
 
       {/* Edit User Modal */}
       {editingUser && (
