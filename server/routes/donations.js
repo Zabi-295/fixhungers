@@ -131,7 +131,7 @@ router.post('/:id/review', auth, async (req, res) => {
     });
     await Promise.all(rankPromises);
 
-    res.json({ msg: 'Review submitted and ranking updated', donation });
+    res.json({ msg: 'Review submitted and ranking updated' });
   } catch (err) {
     console.error("Review Error:", err.message);
     res.status(500).send('Server Error: ' + err.message);

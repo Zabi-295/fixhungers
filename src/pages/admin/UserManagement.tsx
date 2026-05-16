@@ -296,11 +296,12 @@ const UserManagement = () => {
                           <th className="px-4 py-3 font-bold text-primary uppercase">Status</th>
                           <th className="px-4 py-3 font-bold text-primary uppercase">Date</th>
                           <th className="px-4 py-3 font-bold text-primary uppercase">{selectedUser.role === 'Provider' ? 'Accepted By' : 'Donated By'}</th>
+                          <th className="px-4 py-3 font-bold text-primary uppercase text-right">Review/Feedback</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
                         {userDonations.length === 0 ? (
-                          <tr><td colSpan={4} className="text-center py-12 text-muted-foreground italic bg-card">No records found for this user.</td></tr>
+                          <tr><td colSpan={5} className="text-center py-12 text-muted-foreground italic bg-card">No records found for this user.</td></tr>
                         ) : (
                           userDonations.map(d => (
                             <tr key={d.id} className="hover:bg-primary/5 transition-colors bg-card">
@@ -334,6 +335,23 @@ const UserManagement = () => {
                                     {selectedUser.role === 'Provider' ? (d.acceptedBy || "Not accepted yet") : (d.providerName || "Unknown")}
                                   </span>
                                 </div>
+                              </td>
+                              <td className="px-4 py-4 text-right">
+                                {d.review ? (
+                                  <div className="flex flex-col items-end">
+                                    <div className="flex items-center gap-1 text-primary">
+                                      <span className="font-bold">{d.review.rating}</span>
+                                      <span className="text-[10px]">⭐</span>
+                                    </div>
+                                    {d.review.comment && (
+                                      <p className="text-[10px] text-muted-foreground max-w-[120px] truncate" title={d.review.comment}>
+                                        "{d.review.comment}"
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground/50 italic">—</span>
+                                )}
                               </td>
                             </tr>
                           ))
