@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile: user.profile, status: user.isActive } });
+        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile: user.profile, status: user.isActive, rating: user.rating, reviewCount: user.reviewCount, rank: user.rank } });
       }
     );
   } catch (err) {
