@@ -57,6 +57,26 @@ router.put('/:id/status', auth, async (req, res) => {
   }
 });
 
+// @route    PUT api/users/:id
+// @desc     Edit user details (Admin only)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({ msg: 'Access denied' });
+    }
+    const { name, email, role } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { name, email, role } },
+      { new: true }
+    ).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route    DELETE api/users/:id
 // @desc     Delete a user (Admin only)
 router.delete('/:id', auth, async (req, res) => {

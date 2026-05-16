@@ -21,6 +21,7 @@ interface AdminContextType {
   addUser: (user: Omit<RegisteredUser, "id" | "registeredAt" | "status">) => Promise<void>;
   toggleUserStatus: (id: string) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
+  editUser: (id: string, updates: Partial<RegisteredUser>) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -87,8 +88,16 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     fetchUsers();
   };
 
+  const editUser = async (id: string, updates: Partial<RegisteredUser>) => {
+    await apiFetch(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+    fetchUsers();
+  };
+
   return (
-    <AdminContext.Provider value={{ users, addUser, toggleUserStatus, deleteUser }}>
+    <AdminContext.Provider value={{ users, addUser, toggleUserStatus, deleteUser, editUser }}>
       {children}
     </AdminContext.Provider>
   );

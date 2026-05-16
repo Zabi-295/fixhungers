@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { getNumericQuantity } from "@/lib/donation-utils";
 
 const UserManagement = () => {
-  const { users, toggleUserStatus, deleteUser, addUser } = useAdmin();
+  const { users, toggleUserStatus, deleteUser, addUser, editUser } = useAdmin();
   const { donations } = useDonations();
   const [filter, setFilter] = useState<"all" | "Provider" | "NGO">("all");
   const [search, setSearch] = useState("");
@@ -18,6 +18,26 @@ const UserManagement = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<"Provider" | "NGO">("Provider");
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
+  
+  // Edit logic
+  const [editingUser, setEditingUser] = useState<RegisteredUser | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<"Provider" | "NGO">("Provider");
+
+  const startEditing = (u: RegisteredUser, e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent opening details modal
+    setEditingUser(u);
+    setEditName(u.name);
+    setEditEmail(u.email);
+    setEditRole(u.role);
+  };
+
+  const saveEdit = async () => {
+    if (!editingUser) return;
+    await editUser(editingUser.id, { name: editName, email: editEmail, role: editRole });
+    setEditingUser(null);
+  };
 
   const filtered = users.filter((u) => {
     if (filter !== "all" && u.role !== filter) return false;
@@ -84,6 +104,25 @@ const UserManagement = () => {
           <div className="flex gap-2">
             <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Add User</button>
             <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-lg border border-border text-sm">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="bg-card rounded-xl border border-border p-5 mb-6 space-y-3 border-l-4 border-l-primary">
+          <h3 className="font-semibold text-foreground">Edit User: {editingUser.name}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full Name" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="Email" className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <select value={editRole} onChange={(e) => setEditRole(e.target.value as any)} className="px-3 py-2 rounded-lg border border-border text-sm bg-card focus:outline-none">
+              <option value="Provider">Provider</option>
+              <option value="NGO">NGO</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={saveEdit} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Save Changes</button>
+            <button onClick={() => setEditingUser(null)} className="px-4 py-2 rounded-lg border border-border text-sm">Cancel</button>
           </div>
         </div>
       )}
@@ -171,8 +210,8 @@ const UserManagement = () => {
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
-                    <button className="p-1.5 hover:bg-muted rounded transition"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
-                    <button onClick={() => deleteUser(u.id)} className="p-1.5 hover:bg-destructive/10 rounded transition"><Trash2 className="w-4 h-4 text-muted-foreground" /></button>
+                    <button onClick={(e) => startEditing(u, e)} className="p-1.5 hover:bg-muted rounded transition"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); deleteUser(u.id); }} className="p-1.5 hover:bg-destructive/10 rounded transition"><Trash2 className="w-4 h-4 text-muted-foreground" /></button>
                   </div>
                 </td>
               </tr>
