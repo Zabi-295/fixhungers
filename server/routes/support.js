@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Ticket = require('../models/Ticket.js');
+const User = require('../models/User.js');
 const auth = require('../middleware/auth.js');
 
 // @route   GET api/support
@@ -26,26 +27,30 @@ router.post('/', auth, async (req, res) => {
   try {
     const { message } = req.body;
     
-    // Check if user already has an Open ticket to avoid multiple open threads
+    // Fetch actual user from DB to get the real name
+    const actualUser = await User.findById(req.user.id);
+    if (!actualUser) return res.status(404).json({ msg: 'User not found' });
+
+    // Check if user already has an Open ticket
     let ticket = await Ticket.findOne({ userId: req.user.id, status: 'Open' });
     
     if (!ticket) {
       ticket = new Ticket({
         userId: req.user.id,
-        userName: req.user.name || "User",
-        userRole: req.user.role,
+        userName: actualUser.name,
+        userRole: actualUser.role,
         messages: [{
           senderId: req.user.id,
-          senderName: req.user.name || "User",
-          role: req.user.role,
+          senderName: actualUser.name,
+          role: actualUser.role,
           message: message
         }]
       });
     } else {
       ticket.messages.push({
         senderId: req.user.id,
-        senderName: req.user.name || "User",
-        role: req.user.role,
+        senderName: actualUser.name,
+        role: actualUser.role,
         message: message
       });
       ticket.updatedAt = Date.now();
@@ -73,9 +78,12 @@ router.post('/:id/reply', auth, async (req, res) => {
       return res.status(403).json({ msg: 'Not authorized' });
     }
 
+    const actualUser = await User.findById(req.user.id);
+    const senderName = actualUser ? actualUser.name : (req.user.role === 'Admin' ? 'Support Admin' : 'User');
+
     ticket.messages.push({
       senderId: req.user.id,
-      senderName: req.user.name || (req.user.role === 'Admin' ? 'Support Admin' : 'User'),
+      senderName: senderName,
       role: req.user.role,
       message: message
     });
