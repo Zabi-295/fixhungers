@@ -99,32 +99,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     let firebaseUid = "";
     let isEmailVerified = false;
+    let firebaseError = null;
 
     try {
-      // 1. Authenticate with Firebase
+      // 1. Try Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       firebaseUid = firebaseUser.uid;
       isEmailVerified = firebaseUser.emailVerified;
-
-      if (!isEmailVerified && email !== "adminfixhunger@gmail.com") {
-        await signOut(auth);
-        throw new Error("Your email is not verified. Please check your inbox.");
-      }
     } catch (fbErr: any) {
-      console.log("Firebase login failed, checking if admin or legacy account...");
-      if (email !== "adminfixhunger@gmail.com") {
-        throw fbErr;
-      }
-      // For Admin, we allow continuing to MongoDB even if Firebase fails
-      isEmailVerified = true; 
+      console.log("Firebase login failed, proceeding to check MongoDB directly...");
+      firebaseError = fbErr;
     }
 
-    // 2. Login to MongoDB backend to get custom token and profile
-    const res = await apiFetch('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, firebaseUid }),
-    });
+    // 2. Login to MongoDB backend
+    // If Firebase failed, we only send email & password to verify via MongoDB bcrypt
+    let res;
+    try {
+      res = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, firebaseUid }),
+      });
+    } catch (mongoErr: any) {
+      // If MongoDB also fails, throw the original Firebase error (if any) or Mongo error
+      throw firebaseError || mongoErr;
+    }
+
+    // 3. Check verification status
+    // If user is neither verified in Firebase nor active in MongoDB
+    if (!isEmailVerified && !res.user.status) {
+      if (firebaseUid) await signOut(auth);
+      throw new Error("Your email is not verified. Please check your inbox.");
+    }
 
     localStorage.setItem('token', res.token);
     const user = { ...res.user, uid: res.user.id, emailVerified: true };
