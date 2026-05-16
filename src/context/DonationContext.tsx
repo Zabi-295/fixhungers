@@ -99,6 +99,7 @@ interface DonationContextType {
   notifications: Notification[];
   markNotificationRead: (id: string) => void;
   clearNotifications: () => void;
+  fetchDonations: () => Promise<void>;
 }
 
 const buildDefaultProfile = (userProfile?: AuthUserProfile | null): ProviderProfile => ({
@@ -418,6 +419,7 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
         notifications,
         markNotificationRead,
         clearNotifications,
+        fetchDonations,
       }}
     >
       {children}
