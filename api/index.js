@@ -44,23 +44,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Temporary Admin Bypass for Debugging
-app.use((req, res, next) => {
-  const token = req.header('x-auth-token');
-  if (token) {
-    try {
-      const jwt = require('jsonwebtoken');
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // Matching your specific ID and Email from the screenshot
-      if (decoded.user.id === '6a01c6788b7a039cad61fc42' || decoded.user.email === 'mianawphenomenal@gmail.com') {
-        decoded.user.role = 'Admin';
-        req.user = decoded.user;
-      }
-
-    } catch (e) {}
-  }
-  next();
-});
+// Removed Temporary Admin Bypass as it caused normal users to gain admin privileges.
 
 // Routes
 app.use('/api/auth', authRoutes);
