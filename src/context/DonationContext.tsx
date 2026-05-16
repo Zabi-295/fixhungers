@@ -187,6 +187,7 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
             acceptedById: item.acceptedById ? String(item.acceptedById) : undefined,
             acceptedAt: item.acceptedAt ? toIsoDateString(item.acceptedAt, createdAt) : undefined,
             distance: item.distance,
+            review: item.review,
           } as Donation;
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
