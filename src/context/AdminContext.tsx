@@ -18,7 +18,7 @@ export interface RegisteredUser {
 
 interface AdminContextType {
   users: RegisteredUser[];
-  addUser: (user: Omit<RegisteredUser, "id" | "registeredAt" | "status">) => Promise<void>;
+  addUser: (user: Omit<RegisteredUser, "id" | "registeredAt" | "status"> & { password?: string }) => Promise<void>;
   toggleUserStatus: (id: string) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   editUser: (id: string, updates: Partial<RegisteredUser>) => Promise<void>;
@@ -63,10 +63,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const addUser = async (user: Omit<RegisteredUser, "id" | "registeredAt" | "status">) => {
+  const addUser = async (user: Omit<RegisteredUser, "id" | "registeredAt" | "status"> & { password?: string }) => {
     await apiFetch('/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ ...user, password: 'Password123!' }), // Admin created users get a default password
+      body: JSON.stringify({ ...user, password: user.password || 'Password123!', isAdminCreated: true }), 
     });
     fetchUsers();
   };

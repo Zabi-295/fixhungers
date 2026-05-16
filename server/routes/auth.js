@@ -5,12 +5,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User.js');
 const auth = require('../middleware/auth.js');
 const crypto = require('crypto');
-const { sendVerificationEmail } = require('../utils/emailService.js');
+const { sendVerificationEmail, sendAccountCreationEmail } = require('../utils/emailService.js');
 
 // @route    POST api/auth/signup
 // @desc     Register user
 router.post('/signup', async (req, res) => {
-  const { name, email, password, role, firebaseUid } = req.body;
+  const { name, email, password, role, firebaseUid, isAdminCreated } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -24,13 +24,22 @@ router.post('/signup', async (req, res) => {
       password, // We still store it in Mongo as a backup or for other purposes
       role,
       firebaseUid,
-      isActive: false // Initial status until they verify in Firebase (or we can use it to track profile completion)
+      isActive: isAdminCreated ? true : false // If admin created, make it active immediately
     });
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
 
     await user.save();
+
+    // If Admin created this user, send them an email with their credentials
+    if (isAdminCreated) {
+      try {
+        await sendAccountCreationEmail(email, name, password, role);
+      } catch (emailErr) {
+        console.error("Failed to send account creation email:", emailErr);
+      }
+    }
 
     res.json({ msg: 'MongoDB profile created', user: { id: user.id, name: user.name, email: user.email, role: user.role, status: user.isActive } });
   } catch (err) {
