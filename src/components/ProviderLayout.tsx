@@ -8,10 +8,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "./ThemeToggle";
 import SupportChatWidget from "./SupportChatWidget";
 
+import SupportPage from "../pages/SupportPage";
+import { MessageCircle } from "lucide-react";
+
 const navItems = [
   { to: "/provider/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/provider/donate", icon: Mic, label: "Donate Food (Voice)" },
   { to: "/provider/history", icon: History, label: "Donation History" },
+  { to: "/provider/support", icon: MessageCircle, label: "Support Chat" },
   { to: "/provider/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -115,7 +119,6 @@ const ProviderLayout = ({ children }: { children: React.ReactNode }) => {
         <SidebarContent />
       </aside>
       <main className="flex-1 ml-56 min-h-screen">{children}</main>
-      <SupportChatWidget />
     </div>
   );
 };

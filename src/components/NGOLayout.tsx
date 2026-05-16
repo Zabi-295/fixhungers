@@ -11,8 +11,11 @@ import SupportChatWidget from "./SupportChatWidget";
 
 const navItems = [
   { to: "/ngo/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/ngo/nearby", icon: MapPin, label: "Nearby Donations" },
-  { to: "/ngo/history", icon: History, label: "History" },
+  { to: "/ngo/nearby", icon: MapPin, label: "Find Donations" },
+  { to: "/ngo/assistant", icon: Bot, label: "Rescue Assistant" },
+  { to: "/ngo/history", icon: History, label: "Rescue History" },
+  { to: "/ngo/support", icon: MessageCircle, label: "Support Chat" },
+  { to: "/ngo/profile", icon: Settings, label: "Profile Settings" },
 ];
 
 const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {

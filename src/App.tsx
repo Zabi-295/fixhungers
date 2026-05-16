@@ -39,53 +39,60 @@ import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  return (
+    <AuthProvider>
+      <NotificationProvider>
+        <DonationProvider>
+          <AdminProvider>
+            <SupportProvider>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Signup />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                {/* Provider Routes */}
+                <Route path="/provider/dashboard" element={<ProviderLayout><ProviderDashboard /></ProviderLayout>} />
+                <Route path="/provider/donate" element={<ProviderLayout><DonateFood /></ProviderLayout>} />
+                <Route path="/provider/history" element={<ProviderLayout><DonationHistory /></ProviderLayout>} />
+                <Route path="/provider/settings" element={<ProviderLayout><ProviderSettings /></ProviderLayout>} />
+                <Route path="/provider/support" element={<ProviderLayout><SupportPage /></ProviderLayout>} />
+                {/* NGO Routes */}
+                <Route path="/ngo/dashboard" element={<NGOLayout><NGODashboard /></NGOLayout>} />
+                <Route path="/ngo/nearby" element={<NGOLayout><NearbyDonations /></NGOLayout>} />
+                <Route path="/ngo/history" element={<NGOLayout><NGOHistory /></NGOLayout>} />
+                <Route path="/ngo/profile" element={<NGOLayout><NGOProfile /></NGOLayout>} />
+                <Route path="/ngo/donation/:id" element={<NGOLayout><DonationDetail /></NGOLayout>} />
+                <Route path="/ngo/assistant" element={<NGOLayout><RescueAssistant /></NGOLayout>} />
+                <Route path="/ngo/support" element={<NGOLayout><SupportPage /></NGOLayout>} />
+                {/* Admin */}
+                <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
+                <Route path="/admin/donations" element={<AdminLayout><DonationMonitoring /></AdminLayout>} />
+                <Route path="/admin/analytics" element={<AdminLayout><Analytics /></AdminLayout>} />
+                <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
+                <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+                <Route path="/admin/support" element={<AdminLayout><SupportRequests /></AdminLayout>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SupportProvider>
+          </AdminProvider>
+        </DonationProvider>
+      </NotificationProvider>
+    </AuthProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="fix-hunger-theme">
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-        <NotificationProvider>
-        <DonationProvider>
-          <AdminProvider>
-          <SupportProvider>
-            <Routes>
-              <Route path="/" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              {/* Provider */}
-              <Route path="/provider/dashboard" element={<ProviderLayout><ProviderDashboard /></ProviderLayout>} />
-              <Route path="/provider/donate" element={<ProviderLayout><DonateFood /></ProviderLayout>} />
-              <Route path="/provider/history" element={<ProviderLayout><DonationHistory /></ProviderLayout>} />
-              <Route path="/provider/settings" element={<ProviderLayout><ProviderSettings /></ProviderLayout>} />
-              {/* NGO */}
-              <Route path="/ngo/dashboard" element={<NGOLayout><NGODashboard /></NGOLayout>} />
-              <Route path="/ngo/nearby" element={<NGOLayout><NearbyDonations /></NGOLayout>} />
-              <Route path="/ngo/history" element={<NGOLayout><NGOHistory /></NGOLayout>} />
-              <Route path="/ngo/profile" element={<NGOLayout><NGOProfile /></NGOLayout>} />
-              <Route path="/ngo/donation/:id" element={<NGOLayout><DonationDetail /></NGOLayout>} />
-              <Route path="/ngo/assistant" element={<NGOLayout><RescueAssistant /></NGOLayout>} />
-              {/* Admin */}
-              <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-              <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
-              <Route path="/admin/donations" element={<AdminLayout><DonationMonitoring /></AdminLayout>} />
-              <Route path="/admin/analytics" element={<AdminLayout><Analytics /></AdminLayout>} />
-              <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
-              <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
-              <Route path="/admin/support" element={<AdminLayout><SupportRequests /></AdminLayout>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SupportProvider>
-          </AdminProvider>
-        </DonationProvider>
-        </NotificationProvider>
-        </AuthProvider>
-
-      </BrowserRouter>
-    </TooltipProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
