@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
+import SupportChatWidget from "./SupportChatWidget";
 
 const navItems = [
   { to: "/provider/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -103,6 +104,7 @@ const ProviderLayout = ({ children }: { children: React.ReactNode }) => {
           <ThemeToggle />
         </header>
         <main className="min-h-[calc(100vh-56px)]">{children}</main>
+        <SupportChatWidget />
       </div>
     );
   }
@@ -113,6 +115,7 @@ const ProviderLayout = ({ children }: { children: React.ReactNode }) => {
         <SidebarContent />
       </aside>
       <main className="flex-1 ml-56 min-h-screen">{children}</main>
+      <SupportChatWidget />
     </div>
   );
 };

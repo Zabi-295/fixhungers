@@ -66,6 +66,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/support', require('../server/routes/support'));
 
 // Gemini AI Food Analysis Endpoint
 app.post('/api/ai/analyze-food', async (req, res) => {

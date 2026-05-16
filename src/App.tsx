@@ -31,6 +31,8 @@ import { DonationProvider } from "./context/DonationContext";
 import { AdminProvider } from "./context/AdminContext";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import { SupportProvider } from "./context/SupportContext";
+import SupportRequests from "./pages/admin/SupportRequests";
 
 
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -47,8 +49,8 @@ const App = () => (
         <AuthProvider>
         <NotificationProvider>
         <DonationProvider>
-
           <AdminProvider>
+          <SupportProvider>
             <Routes>
               <Route path="/" element={<Signup />} />
               <Route path="/login" element={<Login />} />
@@ -73,8 +75,10 @@ const App = () => (
               <Route path="/admin/analytics" element={<AdminLayout><Analytics /></AdminLayout>} />
               <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
               <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+              <Route path="/admin/support" element={<AdminLayout><SupportRequests /></AdminLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+          </SupportProvider>
           </AdminProvider>
         </DonationProvider>
         </NotificationProvider>

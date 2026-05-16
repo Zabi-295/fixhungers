@@ -6,9 +6,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
 
+import { MessageSquare } from "lucide-react";
+
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
   { label: "User Management", icon: Users, path: "/admin/users" },
+  { label: "Support Requests", icon: MessageSquare, path: "/admin/support" },
   { label: "Donation Monitoring", icon: ClipboardList, path: "/admin/donations" },
   { label: "Analytics & Reports", icon: BarChart3, path: "/admin/analytics" },
 ];

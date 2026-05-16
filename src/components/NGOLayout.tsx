@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
+import SupportChatWidget from "./SupportChatWidget";
 
 const navItems = [
   { to: "/ngo/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -123,12 +124,7 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
           <ThemeToggle />
         </header>
         <main className="min-h-[calc(100vh-56px)]">{children}</main>
-        <button
-          onClick={() => navigate("/ngo/assistant")}
-          className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 transition z-40"
-        >
-          <MessageSquare className="w-5 h-5" />
-        </button>
+        <SupportChatWidget />
       </div>
     );
   }
@@ -139,12 +135,6 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
         <SidebarContent />
       </aside>
       <main className="flex-1 ml-56 min-h-screen">{children}</main>
-      <button
-        onClick={() => navigate("/ngo/assistant")}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 transition z-40"
-      >
-        <MessageSquare className="w-6 h-6" />
-      </button>
     </div>
   );
 };
