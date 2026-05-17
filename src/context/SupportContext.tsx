@@ -8,8 +8,6 @@ export interface ChatMessage {
   senderName: string;
   role: string;
   message: string;
-  imageUrl?: string;
-  seen?: boolean;
   createdAt: string;
 }
 
@@ -20,9 +18,6 @@ export interface SupportTicket {
   userRole: string;
   status: "Open" | "Closed";
   messages: ChatMessage[];
-  unreadCountAdmin: number;
-  unreadCountUser: number;
-  lastMessage: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,11 +26,9 @@ interface SupportContextType {
   tickets: SupportTicket[];
   activeTicket: SupportTicket | null;
   fetchTickets: () => Promise<void>;
-  sendMessage: (msg: string, imageUrl?: string) => Promise<void>;
-  replyToTicket: (id: string, msg: string, imageUrl?: string) => Promise<void>;
+  sendMessage: (msg: string) => Promise<void>;
+  replyToTicket: (id: string, msg: string) => Promise<void>;
   closeTicket: (id: string) => Promise<void>;
-  markAsSeen: (id: string) => Promise<void>;
-  unreadCount: number;
 }
 
 const SupportContext = createContext<SupportContextType | undefined>(undefined);
@@ -56,23 +49,23 @@ export const SupportProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (currentUser) {
       fetchTickets();
-      const interval = setInterval(fetchTickets, 3000); // Polling faster for real-time feel
+      const interval = setInterval(fetchTickets, 10000); // Polling for new messages
       return () => clearInterval(interval);
     }
   }, [currentUser]);
 
-  const sendMessage = async (message: string, imageUrl?: string) => {
+  const sendMessage = async (message: string) => {
     await apiFetch("/support", {
       method: "POST",
-      body: JSON.stringify({ message, imageUrl }),
+      body: JSON.stringify({ message }),
     });
     fetchTickets();
   };
 
-  const replyToTicket = async (id: string, message: string, imageUrl?: string) => {
+  const replyToTicket = async (id: string, message: string) => {
     await apiFetch(`/support/${id}/reply`, {
       method: "POST",
-      body: JSON.stringify({ message, imageUrl }),
+      body: JSON.stringify({ message }),
     });
     fetchTickets();
   };
@@ -82,19 +75,10 @@ export const SupportProvider = ({ children }: { children: ReactNode }) => {
     fetchTickets();
   };
 
-  const markAsSeen = async (id: string) => {
-    await apiFetch(`/support/${id}/seen`, { method: "PUT" });
-    fetchTickets();
-  };
-
   const activeTicket = tickets.find((t) => t.status === "Open") || (tickets.length > 0 ? tickets[0] : null);
-  
-  const unreadCount = tickets.reduce((acc, t) => {
-    return acc + (currentUser?.role === "Admin" ? t.unreadCountAdmin : t.unreadCountUser);
-  }, 0);
 
   return (
-    <SupportContext.Provider value={{ tickets, activeTicket, fetchTickets, sendMessage, replyToTicket, closeTicket, markAsSeen, unreadCount }}>
+    <SupportContext.Provider value={{ tickets, activeTicket, fetchTickets, sendMessage, replyToTicket, closeTicket }}>
       {children}
     </SupportContext.Provider>
   );
