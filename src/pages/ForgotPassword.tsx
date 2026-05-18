@@ -303,24 +303,24 @@ const ForgotPassword = () => {
                     Change Email / Resend OTP
                   </button>
                 </div>
-              </>
-            )}
+              </form>
+            </>
+          )}
 
-            <Link
-              to="/login"
-              className="flex items-center justify-center gap-2 mt-5 text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Login
-            </Link>
-          </div>
-
-          {/* Footer inside green area */}
-          <p className="text-center mt-8 text-xs text-muted-foreground">
-            © 2024 FixHunger AI-Powered Logistics. All rights reserved.<br />
-            Humanitarian Technology for Global Food Security.
-          </p>
+          <Link
+            to="/login"
+            className="flex items-center justify-center gap-2 mt-5 text-sm text-muted-foreground hover:text-foreground transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Login
+          </Link>
         </div>
+
+        {/* Footer inside green area */}
+        <p className="text-center mt-8 text-xs text-muted-foreground">
+          © 2024 FixHunger AI-Powered Logistics. All rights reserved.<br />
+          Humanitarian Technology for Global Food Security.
+        </p>
       </div>
     </div>
   );
