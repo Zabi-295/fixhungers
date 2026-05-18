@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import ProviderLayout from "./components/ProviderLayout";
 import ProviderDashboard from "./pages/provider/Dashboard";
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               {/* Provider */}
               <Route path="/provider/dashboard" element={<ProviderLayout><ProviderDashboard /></ProviderLayout>} />
               <Route path="/provider/donate" element={<ProviderLayout><DonateFood /></ProviderLayout>} />

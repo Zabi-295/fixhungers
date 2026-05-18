@@ -86,8 +86,8 @@ fix-hunger/
 * **Operation**:
   * `POST /register`: Encrypts passwords and creates parallel entries on MongoDB and Firebase.
   * `POST /login`: Validates credentials. Includes an integrated bypass mechanism for the designated Admin email (`adminfixhunger@gmail.com`) to allow instant admin dashboards load without external Firebase validation constraints.
-  * `POST /forgot-password`: Validates account email and issues a secure 6-digit verification code sent via Ethereal or Gmail.
-  * `POST /reset-password`: Verifies the 6-digit OTP code and updates the user password in MongoDB using bcrypt hashing.
+  * `POST /forgot-password`: Checks if email exists, generates a secure random 32-character token, saves it in MongoDB with a 15-minute expiry, and emails a secure reset link.
+  * `POST /reset-password`: Validates the recovery token & email query parameters from the URL, hashes the new password via bcrypt, updates it in MongoDB, and deletes the token to prevent reuse.
 
 #### 📄 `server/routes/users.js`
 * **Type**: REST Route Handlers.

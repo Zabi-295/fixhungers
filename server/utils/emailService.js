@@ -107,7 +107,7 @@ const sendAccountCreationEmail = async (email, name, password, role) => {
   }
 };
 
-const sendResetPasswordEmail = async (email, code) => {
+const sendResetPasswordEmail = async (email, resetLink) => {
   let transporter;
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     transporter = nodemailer.createTransport({
@@ -135,26 +135,30 @@ const sendResetPasswordEmail = async (email, code) => {
     to: email,
     subject: "Reset Your Password - Fix Hunger",
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #4CAF50; text-align: center;">Reset Password Request</h2>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+        <h2 style="color: #4CAF50; text-align: center; margin-bottom: 20px; font-weight: bold;">Reset Your Password</h2>
         <p>Hello,</p>
-        <p>We received a request to reset your password. Use the following 6-digit OTP code to complete your reset:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #e74c3c; background: #f4f4f4; padding: 10px 20px; border-radius: 5px; border: 1px dashed #e74c3c;">
-            ${code}
-          </span>
+        <p>We received a request to reset your password for your Fix Hunger account. Please click the button below to secure your account and set a new password:</p>
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${resetLink}" target="_blank" style="background-color: #4CAF50; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2); transition: all 0.2s;">
+            Reset Password
+          </a>
         </div>
-        <p>This code will expire in 15 minutes. If you did not request a password reset, please ignore this email.</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-        <p style="font-size: 12px; color: #888; text-align: center;">Fix Hunger Team</p>
+        <p style="color: #555;">This link will remain active for <strong>15 minutes</strong>. If you did not request this change, you can safely ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #eeeeee; margin: 25px 0;">
+        <p style="font-size: 12px; color: #999999; text-align: center; line-height: 1.5;">
+          If the button above does not work, copy and paste the following URL into your web browser:<br>
+          <a href="${resetLink}" style="color: #4CAF50; word-break: break-all;">${resetLink}</a>
+        </p>
+        <p style="font-size: 12px; color: #999999; text-align: center; margin-top: 15px;">Fix Hunger Team</p>
       </div>
     `,
   });
 
   if (!process.env.EMAIL_USER) {
     console.log("-----------------------------------------");
-    console.log("PASSWORD RESET OTP SENT TO: " + email);
-    console.log("RESET CODE: " + code);
+    console.log("PASSWORD RESET LINK SENT TO: " + email);
+    console.log("RESET LINK: " + resetLink);
     console.log("Preview URL: " + nodemailer.getTestMessageUrl(info));
     console.log("-----------------------------------------");
   }

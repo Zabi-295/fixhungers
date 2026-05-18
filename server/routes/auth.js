@@ -116,7 +116,7 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // @route    POST api/auth/forgot-password
-// @desc     Generate password reset OTP and email it
+// @desc     Generate password reset token and email a secure reset link
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   try {
@@ -125,18 +125,22 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ msg: 'Account with this email does not exist' });
     }
 
-    // Generate a 6-digit verification code
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate a secure, unique random token
+    const token = crypto.randomBytes(20).toString('hex');
     
-    // Save to user profile directly (MongoDB lets us set dynamic fields, but we also save it in mongoose)
-    user.resetPasswordToken = resetCode;
-    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
+    // Save to user profile with 15 mins expiry
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    // Send the email with Ethereal/Gmail
-    await sendResetPasswordEmail(email, resetCode);
+    // Dynamically retrieve client origin (supports both localhost and Vercel automatically)
+    const clientUrl = req.headers.origin || 'http://localhost:5173';
+    const resetLink = `${clientUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
-    res.json({ msg: 'Verification reset code sent to your email address' });
+    // Send the email with the reset link
+    await sendResetPasswordEmail(email, resetLink);
+
+    res.json({ msg: 'A secure password reset link has been sent to your email address' });
   } catch (err) {
     console.error("Forgot password error:", err.message);
     res.status(500).json({ msg: 'Server error: ' + err.message });
@@ -144,25 +148,25 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // @route    POST api/auth/reset-password
-// @desc     Reset password using OTP code
+// @desc     Reset password using token-based recovery
 router.post('/reset-password', async (req, res) => {
-  const { email, code, newPassword } = req.body;
+  const { email, token, newPassword } = req.body;
   try {
     const user = await User.findOne({
       email,
-      resetPasswordToken: code,
+      resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
     });
 
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid or expired verification code' });
+      return res.status(400).json({ msg: 'This password reset link is invalid or has expired' });
     }
 
     // Encrypt the new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
-    // Clear reset credentials
+    // Delete token and expiry from DB (so they can't be reused)
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
