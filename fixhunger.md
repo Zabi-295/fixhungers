@@ -1,326 +1,303 @@
-# 🍽️ Fix Hunger - Full Project Documentation
+# 🍽️ Fix Hunger - Product Architecture & Technical Documentation
 
-Fix Hunger is a community-driven, real-time food rescue and surplus donation platform designed to bridge the gap between **Food Providers** (Restaurants, Bakeries, Event Organizers) and **NGO Volunteers** (Rescue teams, Volunteers). It includes an integrated **Admin Panel** for auditing, analytics, user management, and technical support.
-
-This document provides a highly detailed, comprehensive structural and functional walkthrough of **every single key file, component, model, context, and route** in the codebase.
+Fix Hunger is a community-driven, real-time food rescue and surplus donation platform designed to bridge the gap between **Food Providers** (Restaurants, Hotels, Event Organizers) and **NGO Volunteers** (Rescue teams, Food collection teams). The project incorporates a comprehensive **Admin Operations Panel** for auditing, analytics, user lifecycle management, and dedicated user technical support.
 
 ---
 
 ## 🛠️ Technology Stack
-* **Frontend**: React.js with TypeScript, Vite (bundler), Tailwind CSS (styling), Radix UI (accessible design primitives), Lucide React (icons), and Leaflet (maps).
-* **Backend**: Node.js, Express.js (mounted on Vercel Serverless `/api`), and Mongoose (ODM).
-* **Database**: MongoDB (user accounts, chats, tickets, donations) and Firebase Auth (for cross-client session tracking).
+* **Frontend**: React.js (TypeScript), Vite (Bundler), Tailwind CSS (Aesthetic Styling), Radix UI (Accessible Primitives), Lucide React (Premium Icon Pack), Leaflet Map Engine.
+* **Backend**: Node.js, Express.js (mounted on serverless environments), Mongoose (MongoDB Object Modeling).
+* **Database**: MongoDB Atlas (User Accounts, Conversations, Tickets, Donations) & Firebase Auth (cross-client user state).
 
 ---
 
 ## 📁 1. Project Directory Structure
 ```
 fix-hunger/
-├── api/                   # Main Express.js backend server entry (Vercel deployment)
-├── server/                # Express Backend Core logic
-│   ├── middleware/        # Authentication & security middleware
-│   ├── models/            # MongoDB Schema definitions
-│   ├── routes/            # API Route endpoints
-│   └── utils/             # Helper utilities (Email, etc.)
-├── src/                   # Frontend Client Core
-│   ├── components/        # Shared components, sidebars, theme and widgets
-│   ├── context/           # React Context Providers (State Management)
-│   ├── hooks/             # Custom React Hooks
-│   ├── lib/               # API clients, helpers, and configurations
-│   ├── pages/             # Frontend Dashboard & Public pages
-│   ├── App.tsx            # Main Route configuration and Providers
-│   └── main.tsx           # Client entry point
-└── config files           # Tailwind, Vite, TypeScript, and Git configs
+├── api/                   # Serverless Express backend main gateway (Vercel Entry)
+├── server/                # Express Server core logics
+│   ├── middleware/        # Security and Session verify filters
+│   ├── models/            # Database Mongoose structures
+│   ├── routes/            # REST API Route handlers
+│   └── utils/             # Helper tools (Email services, etc.)
+├── src/                   # React Frontend App
+│   ├── components/        # Shared layouts, messaging widgets, and theme setups
+│   ├── context/           # React Global State Providers
+│   ├── hooks/             # Utility Hooks
+│   ├── lib/               # Third-party configurations and REST Clients
+│   ├── pages/             # Frontend Dashboard and Public routes
+│   ├── App.tsx            # Routes configuration and providers wrapper
+│   └── main.tsx           # Entry React DOM mount script
+└── Config Files           # Tailwind, Vite, TypeScript, and Git configs
 ```
 
 ---
 
 ## 🧱 2. Backend Architecture (`server/` & `api/`)
 
-### 🔑 Entry Server File
+### 🔑 REST API Gateway
 #### 📄 `api/index.js`
-* **Kya Hai**: Core Express app instance that starts local listeners or exports serverless handlers.
-* **Kyu Use Kiya**: It is the single gateway of our backend API. It establishes connection caching with MongoDB (`mongoose.connect`), manages request parsers/CORS, mounts routes under `/api`, and integrates Gemini AI analysis endpoints.
-* **Functionality**:
-  * `/api/ai/analyze-food`: Accepts a base64 image of food, sends it to Gemini API, and instantly identifies food type, category, and shelf life.
-  * `/api/ai/chat`: Powered by Gemini to answer rescue volunteer queries based on current local pending donations.
+* **Type**: Express Application Initialization.
+* **Objective**: Binds database connections, sets up JSON parser limits (10MB for food images scan), registers CORS handlers, and initializes Gemini AI engines.
+* **Core Endpoints**:
+  * `POST /api/ai/analyze-food`: Captures base64 images of food items and forwards them to Gemini AI (`gemini-1.5-flash`) to instantly classify food types, food categories, and forecast shelf-life hours.
+  * `POST /api/ai/chat`: Feeds Gemini AI with live local donation metrics to help NGO volunteers coordinate rescues dynamically.
 
 ---
 
-### 🗄️ MongoDB Models (`server/models/`)
+### 🗄️ Database Schemas (`server/models/`)
 
 #### 📄 `server/models/User.js`
-* **Kya Hai**: MongoDB user representation.
-* **Kyu Use Kiya**: Binds authentication records to profile structures.
-* **Functionality**: Stores credentials, role types (`Admin`, `NGO`, `Provider`), custom fields (like `orgName` for Providers, `vehicleType` for NGOs), active markers (`isActive`), location coordinates (`lat`, `lng`), and individual preferences (like push notifications, volunteer tracking, and daily summary).
+* **Type**: Mongoose Database Schema.
+* **Objective**: Defines user authentication, physical locations, status parameters, and notification settings.
+* **Key Fields**: Name, Email, Password Hash, Role (`Admin`/`NGO`/`Provider`), Profile Settings (Org Name, Vehicle details, Phone, Coordinates), Rank, Rating, and Active flags (`isActive`).
 
 #### 📄 `server/models/Donation.js`
-* **Kya Hai**: Surplus food database schema.
-* **Kyu Use Kiya**: Track listed surplus food items, their locations, and availability statuses.
-* **Functionality**: Stores donor ID reference, food item specs (name, quantity, shelf life, photo), pickup address, coordinates, and status tracks (`Available`, `Claimed`, `Delivered`, `Expired`).
+* **Type**: Mongoose Database Schema.
+* **Objective**: Handles physical metadata for surplus food donations listed by Providers.
+* **Key Fields**: Donor Reference, Food Item Specs (Title, Category, Quantity, Image, Shelf Life), Coordinate Positions (`lat`/`lng`), Address, and Lifespan Tracking (`Available`, `Claimed`, `Delivered`, `Expired`).
 
 #### 📄 `server/models/Ticket.js`
-* **Kya Hai**: Customer care support tickets.
-* **Kyu Use Kiya**: Connects users directly to the platform administrators for quick troubleshooting.
-* **Functionality**: Stores user ID references, roles, ticket status (`Open`/`Closed`), and an array of individual messages exchanged between user and Admin.
+* **Type**: Mongoose Database Schema.
+* **Objective**: Stores customer support and issue-tracking records.
+* **Key Fields**: Ticket Author Reference, Role, Ticket Status (`Open`/`Closed`), and chronologically structured chat messages exchanged with the Administrator.
 
 #### 📄 `server/models/Conversation.js`
-* **Kya Hai**: Private Direct Messaging database schema.
-* **Kyu Use Kiya**: Facilitates dedicated P2P communications specifically between NGOs and Providers.
-* **Functionality**: Contains participant references and chronological direct message objects (sender, receiver, text, timestamp).
+* **Type**: Mongoose Database Schema.
+* **Objective**: Powers private Direct Messages between NGO volunteers and Food Providers.
+* **Key Fields**: Array of Participant references, Chronological list of message payloads, and session tracking timestamps.
 
 ---
 
-### 🛡️ Middleware (`server/middleware/`)
+### 🛡️ Authentication Filters (`server/middleware/`)
 
 #### 📄 `server/middleware/auth.js`
-* **Kya Hai**: Secure JWT authentication verifier.
-* **Kyu Use Kiya**: Restricts sensitive APIs to authenticated users.
-* **Functionality**: Extracts the Bearer token from request headers, decodes the JWT using the secret key, and binds the decrypted user ID, email, and role directly to the incoming request payload (`req.user`).
+* **Type**: Route Protection Middleware.
+* **Objective**: Protects REST API routes, ensuring they can only be reached by authorized client sessions.
+* **Operation**: Reads the incoming HTTP request authorization headers, validates the secret JWT key, and attaches decoded user details (`id`, `email`, `role`) directly to the request scope.
 
 ---
 
-### 🌐 Backend Routes (`server/routes/`)
+### 🌐 API Routings (`server/routes/`)
 
 #### 📄 `server/routes/auth.js`
-* **Kya Hai**: User credentials manager.
-* **Kyu Use Kiya**: Powers onboarding and user logins.
-* **Functionality**: 
-  * `POST /register`: Registers user profiles on both MongoDB and Firebase.
-  * `POST /login`: Validates password hashes (via bcrypt) and issues secure JWT sessions. Includes an instant bypass mechanism for the Admin login email (`adminfixhunger@gmail.com`) to bypass Firebase constraints.
+* **Type**: REST Route Handlers.
+* **Objective**: Manages registration, logins, and session synchronizations.
+* **Operation**:
+  * `POST /register`: Encrypts passwords and creates parallel entries on MongoDB and Firebase.
+  * `POST /login`: Validates credentials. Includes an integrated bypass mechanism for the designated Admin email (`adminfixhunger@gmail.com`) to allow instant admin dashboards load without external Firebase validation constraints.
 
 #### 📄 `server/routes/users.js`
-* **Kya Hai**: User directory controller.
-* **Kyu Use Kiya**: Profile settings and admin directory audits.
-* **Functionality**:
-  * `PUT /profile`: Persists custom setting preferences.
-  * `GET /contacts`: Securely queries active, verified contacts (returns active NGOs to Providers, and active Providers to NGOs).
-  * `GET /` & `PUT /:id/status`: Admin routes for searching, editing, and toggling user roles/activity statuses.
+* **Type**: REST Route Handlers.
+* **Objective**: User operations, Admin edits, and Contact Directory listing.
+* **Operation**:
+  * `PUT /profile`: Updates phone numbers, physical coordinates, and notifications.
+  * `GET /contacts`: Direct messaging utility. Automatically returns matching active partners (Providers retrieve NGOs; NGOs retrieve Providers).
+  * `GET /` & `PUT /:id/status`: Admin actions to search, edit, activate, or deactivate platform accounts.
 
 #### 📄 `server/routes/donations.js`
-* **Kya Hai**: Donation lifecycle management.
-* **Kyu Use Kiya**: Handles surplus listings, claiming, and delivery logs.
-* **Functionality**:
-  * `POST /`: Lists new surplus donation details.
-  * `GET /nearby`: Returns active, unexpired donations sorted by proximity.
-  * `PUT /:id/claim`: Lets an NGO reserve a donation.
-  * `PUT /:id/status`: Updates tracking logs (Available -> Claimed -> Delivered).
+* **Type**: REST Route Handlers.
+* **Objective**: Coordinates the lifecycle of surplus food items.
+* **Operation**:
+  * `POST /`: Submits surplus food entries.
+  * `GET /nearby`: Queries unexpired, open listings sorted by geographic proximity.
+  * `PUT /:id/claim`: NGOs claim food listings.
+  * `PUT /:id/status`: Updates logistics status tracking (Available -> Claimed -> Delivered).
 
 #### 📄 `server/routes/support.js`
-* **Kya Hai**: Admin Support channels.
-* **Kyu Use Kiya**: Coordinates error reporting and assistance between users and Admin.
-* **Functionality**: Allows users to post queries to create a support thread, lists active tickets for Admins, and permits both parties to post replies and close tickets.
+* **Type**: REST Route Handlers.
+* **Objective**: Runs the interactive Technical Support system.
+* **Operation**: Handles support ticket creations, updates, replies, and closing tickets.
 
 #### 📄 `server/routes/chats.js`
-* **Kya Hai**: P2P messages pipeline.
-* **Kyu Use Kiya**: Connects Providers and NGOs directly.
-* **Functionality**:
+* **Type**: REST Route Handlers.
+* **Objective**: Direct messaging communications.
+* **Operation**:
   * `GET /`: Lists ongoing direct conversations.
-  * `GET /:userId`: Checks if a thread exists with a participant, creates one if missing, and loads the history.
-  * `POST /:userId`: Posts a new direct message into the chronological thread.
+  * `GET /:userId`: Connects users, creates new message channels, and returns histories.
+  * `POST /:userId`: Appends a new message to the P2P direct chat.
 
 ---
 
-## 💻 3. Frontend Architecture (`src/`)
+## 💻 4. Frontend Client Architecture (`src/`)
 
-### 🧠 React State Management (`src/context/`)
+### 🧠 State Management Contexts (`src/context/`)
 
 #### 📄 `src/context/AuthContext.tsx`
-* **Kya Hai**: Account verification manager.
-* **Kyu Use Kiya**: Holds the global state of the logged-in user, their JWT, role profile, and token refresh routines.
-* **Functionality**: Automatically parses active local storage tokens on startup, validates status, logs users in/out, and supplies user profile references to all components.
+* **Type**: Global State Provider.
+* **Objective**: Stores authenticated session profiles and JWT details.
+* **Operation**: Auto-detects local storage credentials on load, manages logins/logouts, and provides user status parameters globally.
 
 #### 📄 `src/context/DonationContext.tsx`
-* **Kya Hai**: Live donations dispatcher.
-* **Kyu Use Kiya**: Synchronizes available food listings, proximity lists, and historical claims.
-* **Functionality**: Tracks food details, fetches available foods list, triggers claim actions, and persists NGO pickup logs.
+* **Type**: Global State Provider.
+* **Objective**: Handles all food list coordinates, claims, and rescue updates.
 
 #### 📄 `src/context/ChatContext.tsx`
-* **Kya Hai**: Direct Messaging pipeline context.
-* **Kyu Use Kiya**: Manages private direct chats, chat lists, active participant records, and message deliveries.
-* **Functionality**: Polls `/api/chats` every 5 seconds to keep direct messaging in real-time, selects contacts, and sends messages.
+* **Type**: Global State Provider.
+* **Objective**: Manages the Direct Messaging system.
+* **Operation**: Periodically polls `/api/chats` every 5 seconds to capture direct chat items and syncs conversation lists.
 
 #### 📄 `src/context/SupportContext.tsx`
-* **Kya Hai**: Support Desk context.
-* **Kyu Use Kiya**: Feeds support tickets, active conversations, and replies to the floating widget.
-* **Functionality**: Polls support messages from `/api/support` to alert the user of new replies from the administrator.
+* **Type**: Global State Provider.
+* **Objective**: Connects the floating drawer UI directly to support tickets.
+* **Operation**: Manages issue reports, polls replies from the support administrator, and handles resolution states.
 
 #### 📄 `src/context/AdminContext.tsx`
-* **Kya Hai**: Control center state manager.
-* **Kyu Use Kiya**: Handles Admin user management grids, system monitoring logs, and analytics.
-* **Functionality**: Synchronizes database users, manages updates/deletions, registers activation/deactivation triggers, and fetches global analytics metrics.
+* **Type**: Global State Provider.
+* **Objective**: Coordinates Admin metrics, user lists, and statistics.
 
 #### 📄 `src/context/NotificationContext.tsx`
-* **Kya Hai**: Alert dispatcher.
-* **Kyu Use Kiya**: Pushes responsive system alerts (e.g. "New Donation Available Nearby!").
-* **Functionality**: Displays toast notifications and custom badges when users post, claim, or complete rescue events.
+* **Type**: Global State Provider.
+* **Objective**: Displays interactive toast warnings and pop-ups for critical events.
 
 ---
 
-### 🎨 Reusable & Layout Components (`src/components/`)
+### 🎨 Design Layouts & Core Components (`src/components/`)
 
 #### 📄 `src/components/ProviderLayout.tsx` & `src/components/NGOLayout.tsx`
-* **Kya Hai**: Role-based responsive layouts.
-* **Kyu Use Kiya**: Side navigation frames, quick menu items, and responsive wrappers.
-* **Functionality**: Contains sideboards, role indicators, Dark/Light quick toggle, mobile headers, and mounts the floating Admin Support Chat widget.
+* **Type**: Persistent Sidebars & Responsive Navs.
+* **Objective**: Wraps core routes, providing side navigation panels and quick-access settings.
+* **Operation**: Customizes sidebar menus based on roles, handles light/dark mode triggers, responsive overlays, and loads the floating support chat drawer.
 
 #### 📄 `src/components/AdminLayout.tsx`
-* **Kya Hai**: Admin dashboard frame.
-* **Kyu Use Kiya**: Manages admin panel side nav and header actions.
-* **Functionality**: Side navigation for Admin Dashboard, User Management, Donations, Support Tickets, Analytics, Profile, and Settings.
+* **Type**: Persistent Admin Sidebar.
+* **Objective**: Frame layout containing sidebar menus for the Admin Panel.
 
 #### 📄 `src/components/Messages.tsx`
-* **Kya Hai**: Unified Direct Messaging Panel.
-* **Kyu Use Kiya**: Renders the complete, responsive dual-pane chat system.
-* **Functionality**: Displays active conversations, provides a Modal search box to select verified contacts, lists message bubbles, and supports mobile back navigation.
+* **Type**: Direct Messaging Client UI.
+* **Objective**: Premium split-screen chat interface.
+* **Operation**: Features user profiles quick lookups, direct partner contact search modals, unread message indicators, and mobile-friendly back navigations.
 
 #### 📄 `src/components/SupportChatWidget.tsx`
-* **Kya Hai**: Floating ticket drawer.
-* **Kyu Use Kiya**: Acts as a dedicated gateway for users to contact support.
-* **Functionality**: Floating icon in bottom-right corner that launches an interactive dialog titled "Admin Support Chat" to exchange help text with support.
+* **Type**: Floating Help Drawer.
+* **Objective**: Keeps technical support questions isolated strictly for the Administrator.
+* **Operation**: Floating icon in bottom-right corner. Clearly branded as **"Admin Support Chat"** to keep support requests separated from general Direct Messages.
 
 #### 📄 `src/components/ThemeProvider.tsx` & `ThemeToggle.tsx`
-* **Kya Hai**: System theme coordinator.
-* **Kyu Use Kiya**: Saves and sets light and dark styles.
-* **Functionality**: Integrates Tailwind classes to swap dark mode states globally, persists preference in local storage, and provides a sleek toggle button.
+* **Type**: Dark Mode Context Provider.
+* **Objective**: Manages CSS theme state transitions.
 
 ---
 
-### 📑 Dashboard & Views (`src/pages/`)
+### 📑 Routing & Shared Views
 
-#### 📄 `src/pages/Index.tsx`
-* **Kya Hai**: Core public landing page.
-* **Kyu Use Kiya**: Introduces visitors to "Fix Hunger" and prompts call-to-actions.
-
-#### 📄 `src/pages/Login.tsx` & `Signup.tsx` & `ForgotPassword.tsx`
-* **Kya Hai**: Authentication screens.
-* **Kyu Use Kiya**: Registers users and initiates valid sessions.
-
-#### 📄 `src/pages/NotFound.tsx`
-* **Kya Hai**: Error fallback screen.
-* **Kyu Use Kiya**: Handles broken links with an elegant redirect mechanism.
+#### 📄 `src/App.tsx`
+* **Type**: Main Application Router.
+* **Objective**: Establishes React Router paths and nests contexts globally:
+```
+QueryClientProvider
+└── ThemeProvider
+    └── TooltipProvider
+        └── AuthProvider
+            └── NotificationProvider
+                └── DonationProvider
+                    └── AdminProvider
+                        └── SupportProvider
+                            └── ChatProvider
+                                └── BrowserRouter
+                                    └── Routes
+```
 
 ---
 
-### 🧑‍🍳 Food Provider Area (`src/pages/provider/`)
+## 📸 5. Visual System & Screenshot Placement Guide
 
-#### 📄 `src/pages/provider/Dashboard.tsx`
-* **Kya Hai**: Provider hub.
-* **Kyu Use Kiya**: Summary of listed active foods, status of claims, and live metrics.
-* **Functionality**: Displays active donation summaries, quick listing shortcut, and claims history.
+To visually capture the core system features, please take screenshots of the live system and replace the placeholder references below. 
 
-#### 📄 `src/pages/provider/DonateFood.tsx`
-* **Kya Hai**: Voice & Image assisted donation page.
-* **Kyu Use Kiya**: Streamlines creating new food lists.
-* **Functionality**: Integrates voice-recognition for description inputs, local camera captures, and triggers Gemini AI to automatically fill shelf-life and categories.
-
-#### 📄 `src/pages/provider/DonationHistory.tsx`
-* **Kya Hai**: Archive portal.
-* **Kyu Use Kiya**: Historical records of all past surplus items.
-
-#### 📄 `src/pages/provider/ProviderSettings.tsx`
-* **Kya Hai**: Profile setting panels.
-* **Kyu Use Kiya**: Syncs name, organization type, location address, and map coordinates.
+Recommended image location: Create a `./screenshots/` directory in the project root to host the assets.
 
 ---
 
-### 🛡️ NGO Rescue Volunteer Area (`src/pages/ngo/`)
-
-#### 📄 `src/pages/ngo/Dashboard.tsx`
-* **Kya Hai**: NGO mission control.
-* **Kyu Use Kiya**: Displays local statistics, active claims, and recent rescue reports.
-
-#### 📄 `src/pages/ngo/NearbyDonations.tsx`
-* **Kya Hai**: Proximity Radar.
-* **Kyu Use Kiya**: Shows nearby listings on an interactive leaflet map.
-* **Functionality**: Highlights surplus listings in real-time, displays details, and permits claiming them.
-
-#### 📄 `src/pages/ngo/DonationDetail.tsx`
-* **Kya Hai**: Item audit panel.
-* **Kyu Use Kiya**: Shows details of the donation, donor address, location, and path coordinate mappings.
-
-#### 📄 `src/pages/ngo/History.tsx`
-* **Kya Hai**: Volunteer logs.
-* **Kyu Use Kiya**: List of all claimed, picked up, and successfully distributed orders.
-
-#### 📄 `src/pages/ngo/Profile.tsx`
-* **Kya Hai**: Settings portal.
-* **Kyu Use Kiya**: Customizes name, vehicle details, tracking choices, and profile info.
-
-#### 📄 `src/pages/ngo/RescueAssistant.tsx`
-* **Kya Hai**: Gemini AI powered assistant.
-* **Kyu Use Kiya**: NGO volunteer assistant chat.
-* **Functionality**: Gives recommendations and logistics support based on actual pending listings.
+### 🖼️ Screenshot Placement 1: Public Landing Page
+* **Source Screen**: Access the public root URL `http://localhost:5173/` before logging in.
+* **Placeholder**:
+  ![Public Landing Page Overview](./screenshots/landing_page.png)
+  *(Description: Captures the modern dark/light landing layout, navigation, hero banner, and key features overview.)*
 
 ---
 
-### 🛡️ Administrator Panel (`src/pages/admin/`)
-
-#### 📄 `src/pages/admin/Dashboard.tsx`
-* **Kya Hai**: System supervisor center.
-* **Kyu Use Kiya**: Core global metrics (Total Active Providers, NGOs, active donations, system health).
-
-#### 📄 `src/pages/admin/UserManagement.tsx`
-* **Kya Hai**: User directory control.
-* **Kyu Use Kiya**: System audit tools for users.
-* **Functionality**: Displays structured users grid, features user profile drawers showing historical donations (Providers) or pickups (NGOs), handles updates, and deactivates/deletes users.
-
-#### 📄 `src/pages/admin/DonationMonitoring.tsx`
-* **Kya Hai**: Inventory radar.
-* **Kyu Use Kiya**: Track active and historical listings.
-
-#### 📄 `src/pages/admin/Analytics.tsx`
-* **Kya Hai**: Hotspot Heatmap & Analytics.
-* **Kyu Use Kiya**: Interactive map representing user distributions and hot-spots.
-* **Functionality**: Plots color-coded pins: **Green** (Available Surplus), **Purple** (NGO Rescuers), **Blue** (Providers), and **Red** (Deactivated accounts), with a responsive legend.
-
-#### 📄 `src/pages/admin/SupportRequests.tsx`
-* **Kya Hai**: Admin support desk.
-* **Kyu Use Kiya**: Interface to monitor, reply, and close incoming technical support tickets.
-
-#### 📄 `src/pages/admin/AdminProfile.tsx` & `AdminSettings.tsx`
-* **Kya Hai**: Admin settings.
-* **Kyu Use Kiya**: Customize Admin account credentials and settings.
+### 🖼️ Screenshot Placement 2: User Authentication Portal
+* **Source Screen**: Access `http://localhost:5173/login` or `/signup`.
+* **Placeholder**:
+  ![Authentication Portal](./screenshots/auth_portal.png)
+  *(Description: Captures the premium, clean glassmorphic signup and login forms.)*
 
 ---
 
-## 🚀 How Everything Runs
+### 🖼️ Screenshot Placement 3: Food Provider Dashboard
+* **Source Screen**: Log in as a Provider and open `http://localhost:5173/provider/dashboard`.
+* **Placeholder**:
+  ![Provider Operations Dashboard](./screenshots/provider_dashboard.png)
+  *(Description: Shows listed active surplus items, claim logs, donor rankings, and total items rescued.)*
 
-### 1. App Startup (Routing & Providers)
-`src/App.tsx` initializes and nests the core provider elements:
-```
-QueryClientProvider (API state caching)
-└── ThemeProvider (Dark / Light toggle framework)
-    └── TooltipProvider (Standard Radix overlays)
-        └── AuthProvider (User sessions)
-            └── NotificationProvider (Toasts & alerts)
-                └── DonationProvider (Nearby listings)
-                    └── AdminProvider (Global users database)
-                        └── SupportProvider (Technical desk)
-                            └── ChatProvider (Direct NGO <-> Provider chats)
-                                └── BrowserRouter (React Router configuration)
-```
+---
 
-### 2. P2P Direct Chat Operations Flow
-```
-[Provider / NGO Messages Screen]
-       │
-       ├──► Searches/Selects Chat Contact (GET /api/users/contacts)
-       │
-       ├──► Loads Conversation Thread (GET /api/chats/:userId)
-       │
-       ├──► Sends message (POST /api/chats/:userId)
-       │
-       └──► Polling loop (GET /api/chats) every 5 seconds updates thread
-```
+### 🖼️ Screenshot Placement 4: AI Voice & Camera Donation Listing
+* **Source Screen**: Open `http://localhost:5173/provider/donate`.
+* **Placeholder**:
+  ![Surplus Food Listing Form](./screenshots/donate_food_form.png)
+  *(Description: Captures the listing form showcasing voice description capture and AI-assisted food item scan.)*
 
-### 3. Support Operations Flow
-```
-[User Dashboard floating support drawer]
-       │
-       ├──► Type Issue & Send (POST /api/support)
-       │
-       ├──► Admin reads & replies (POST /api/support/:id/reply)
-       │
-       └──► Polling loop (GET /api/support) keeps drawer updated in real-time
-```
+---
+
+### 🖼️ Screenshot Placement 5: NGO Rescue Dashboard
+* **Source Screen**: Log in as an NGO and navigate to `http://localhost:5173/ngo/dashboard`.
+* **Placeholder**:
+  ![NGO Rescue Dashboard Overview](./screenshots/ngo_dashboard.png)
+  *(Description: Displays nearby listings summary, pending food collections, and volunteer stats.)*
+
+---
+
+### 🖼️ Screenshot Placement 6: Nearby Proximity Radar Map
+* **Source Screen**: Navigate to `http://localhost:5173/ngo/nearby`.
+* **Placeholder**:
+  ![Nearby Proximity Radar Map](./screenshots/nearby_donations_map.png)
+  *(Description: Shows active local food locations, coordinate circles, and the Leaflet Map interface.)*
+
+---
+
+### 🖼️ Screenshot Placement 7: Direct Messaging Chat System
+* **Source Screen**: Access `http://localhost:5173/provider/messages` or `/ngo/messages`.
+* **Placeholder**:
+  ![Direct Message Interface](./screenshots/direct_messages_chat.png)
+  *(Description: Displays the dual-pane P2P direct chat, contact lookup modal, and messages list.)*
+
+---
+
+### 🖼️ Screenshot Placement 8: Floating Admin Support Widget
+* **Source Screen**: Click the floating chat button in the bottom-right corner of any user dashboard.
+* **Placeholder**:
+  ![Admin Support Chat Widget](./screenshots/admin_support_widget.png)
+  *(Description: Shows the isolated Admin Support chat drawer.)*
+
+---
+
+### 🖼️ Screenshot Placement 9: Admin Dashboard Overview
+* **Source Screen**: Log in as Admin (`adminfixhunger@gmail.com`) and open `http://localhost:5173/admin/dashboard`.
+* **Placeholder**:
+  ![Admin Operations Hub](./screenshots/admin_dashboard.png)
+  *(Description: Displays global system stats, active users count, and donation status metrics.)*
+
+---
+
+### 🖼️ Screenshot Placement 10: Admin User Directory Control
+* **Source Screen**: Navigate to `http://localhost:5173/admin/users`.
+* **Placeholder**:
+  ![Admin User Directory Management](./screenshots/user_directory_management.png)
+  *(Description: Displays the user grid with activation/deactivation triggers and profile details drawer.)*
+
+---
+
+### 🖼️ Screenshot Placement 11: Real-time Donation Hotspots Heatmap
+* **Source Screen**: Navigate to `http://localhost:5173/admin/analytics`.
+* **Placeholder**:
+  ![Real-time Donation Hotspots Heatmap](./screenshots/hotspots_heatmap.png)
+  *(Description: Captures user distribution map with colored markers: green, blue, purple, and red, along with the map legend.)*
+
+---
+
+### 🖼️ Screenshot Placement 12: Admin Support Requests Ticket Desk
+* **Source Screen**: Navigate to `http://localhost:5173/admin/support`.
+* **Placeholder**:
+  ![Admin Support Requests Ticket Center](./screenshots/support_tickets_management.png)
+  *(Description: Shows the technical desk where administrators manage and reply to user tickets.)*
