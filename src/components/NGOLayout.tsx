@@ -12,6 +12,7 @@ import SupportChatWidget from "./SupportChatWidget";
 const navItems = [
   { to: "/ngo/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/ngo/nearby", icon: MapPin, label: "Nearby Donations" },
+  { to: "/ngo/messages", icon: MessageSquare, label: "Messages" },
   { to: "/ngo/history", icon: History, label: "History" },
 ];
 
@@ -135,6 +136,7 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
         <SidebarContent />
       </aside>
       <main className="flex-1 ml-56 min-h-screen">{children}</main>
+      <SupportChatWidget />
     </div>
   );
 };

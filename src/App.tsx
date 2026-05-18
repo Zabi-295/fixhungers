@@ -33,6 +33,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { SupportProvider } from "./context/SupportContext";
 import SupportRequests from "./pages/admin/SupportRequests";
+import { ChatProvider } from "./context/ChatContext";
+import ProviderMessages from "./pages/provider/Messages";
+import NGOMessages from "./pages/ngo/Messages";
 
 
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -51,6 +54,7 @@ const App = () => (
         <DonationProvider>
           <AdminProvider>
           <SupportProvider>
+          <ChatProvider>
             <Routes>
               <Route path="/" element={<Signup />} />
               <Route path="/login" element={<Login />} />
@@ -61,6 +65,7 @@ const App = () => (
               <Route path="/provider/donate" element={<ProviderLayout><DonateFood /></ProviderLayout>} />
               <Route path="/provider/history" element={<ProviderLayout><DonationHistory /></ProviderLayout>} />
               <Route path="/provider/settings" element={<ProviderLayout><ProviderSettings /></ProviderLayout>} />
+              <Route path="/provider/messages" element={<ProviderLayout><ProviderMessages /></ProviderLayout>} />
               {/* NGO */}
               <Route path="/ngo/dashboard" element={<NGOLayout><NGODashboard /></NGOLayout>} />
               <Route path="/ngo/nearby" element={<NGOLayout><NearbyDonations /></NGOLayout>} />
@@ -68,6 +73,7 @@ const App = () => (
               <Route path="/ngo/profile" element={<NGOLayout><NGOProfile /></NGOLayout>} />
               <Route path="/ngo/donation/:id" element={<NGOLayout><DonationDetail /></NGOLayout>} />
               <Route path="/ngo/assistant" element={<NGOLayout><RescueAssistant /></NGOLayout>} />
+              <Route path="/ngo/messages" element={<NGOLayout><NGOMessages /></NGOLayout>} />
               {/* Admin */}
               <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
               <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
@@ -78,6 +84,7 @@ const App = () => (
               <Route path="/admin/support" element={<AdminLayout><SupportRequests /></AdminLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+          </ChatProvider>
           </SupportProvider>
           </AdminProvider>
         </DonationProvider>

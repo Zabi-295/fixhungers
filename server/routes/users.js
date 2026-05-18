@@ -92,4 +92,29 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// @route    GET api/users/contacts
+// @desc     Get possible chat contacts (Providers get NGOs, NGOs get Providers)
+router.get('/contacts', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    if (!currentUser) return res.status(404).json({ msg: 'User not found' });
+
+    let query = { isActive: true };
+    if (currentUser.role === 'Provider') {
+      query.role = 'NGO';
+    } else if (currentUser.role === 'NGO') {
+      query.role = 'Provider';
+    } else {
+      // Admin sees both
+      query.role = { $in: ['Provider', 'NGO'] };
+    }
+
+    const contacts = await User.find(query).select('name email role status profile');
+    res.json(contacts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

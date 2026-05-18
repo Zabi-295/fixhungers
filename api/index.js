@@ -9,6 +9,7 @@ dotenv.config();
 const authRoutes = require('../server/routes/auth');
 const donationRoutes = require('../server/routes/donations');
 const userRoutes = require('../server/routes/users');
+const chatRoutes = require('../server/routes/chats');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use(async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/chats', chatRoutes);
 app.use('/api/support', require('../server/routes/support'));
 
 // Gemini AI Food Analysis Endpoint
