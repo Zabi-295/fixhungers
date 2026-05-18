@@ -56,8 +56,9 @@ const UserSchema = new mongoose.Schema({
   },
   rating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },
-  rank: { type: Number, default: 0 }
-
+  rank: { type: Number, default: 0 },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 });
 
 module.exports = mongoose.model('User', UserSchema);
