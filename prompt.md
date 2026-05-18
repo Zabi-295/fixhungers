@@ -93,3 +93,40 @@ This document records the exact prompts provided during the development cycles o
   * Wrote an enterprise-grade `fixhunger.md` file in clear, professional English.
   * Walked through the complete architecture: technology stack, folder structure, database models, security middlewares, REST API endpoints, state contexts, layouts, and panels.
   * Placed 12 detailed screenshot placeholders with instructions on how to capture and link real-time images for product presentations.
+
+---
+
+## 🚀 Page-by-Page Professional AI Prompts Directory
+
+Use these optimized, professional English prompts to regenerate or extend any screen or feature of the Fix Hunger system.
+
+### 1. User Login & Authentication Portal (`Login.tsx`)
+> **Prompt**: "Build a high-end, responsive Login portal featuring a premium glassmorphic container, integrated inputs for Email and Password, and clear validation flags. Add visual toggle icons for hiding/revealing passwords. The page must connect to the `POST /api/auth/login` REST API. If the email matches the primary administrator address `adminfixhunger@gmail.com`, bypass external Firebase authentication steps and directly validate against the MongoDB server, issuing a secure JWT token and redirecting the administrator directly to the `/admin/dashboard`. Incorporate active theme bindings supporting Light/Dark colors."
+
+### 2. User Onboarding & Signup Screen (`Signup.tsx`)
+> **Prompt**: "Design an onboarding Signup screen. The form must let the user select their account type: Food Provider (Restaurants, bakeries) or NGO Volunteer (Food rescuers, volunteers). Dynamically render role-specific details based on selection: organization name and provider type for Providers, or full name and vehicle specifications for NGOs. Integrate physical coordinate inputs (`lat`, `lng`) to establish proximity logs. Connect registration fields directly to the `POST /api/auth/register` API to persist entries to both MongoDB and Firebase Auth databases simultaneously."
+
+### 3. Food Provider Dashboard (`provider/Dashboard.tsx`)
+> **Prompt**: "Create a comprehensive Food Provider Dashboard layout. Include high-impact data cards representing key operational metrics: Active Surplus Listings, Claims in Progress, Completed Rescues, and Community Partner Rank. Display an active listings data table showing food names, quantities, shelf life statuses, and current claim states. Add a quick list shortcut button launching the donation portal. Ensure full responsiveness across mobile, tablet, and desktop screens."
+
+### 4. Surplus Food Listing with AI & Voice Assistance (`provider/DonateFood.tsx`)
+> **Prompt**: "Develop a state-of-the-art surplus food listing page. Include a camera-capture container allowing providers to take pictures of food. Connect this container to the `POST /api/ai/analyze-food` Gemini API endpoint to automatically process the image and extract food title, food category, and forecast safe shelf-life hours. Integrate Web Speech Voice Recognition, allowing users to speak their food descriptions naturally and automatically populate text fields. Include fallback inputs for manual entries."
+
+### 5. NGO Operations Dashboard (`ngo/Dashboard.tsx`)
+> **Prompt**: "Build an NGO Operations Dashboard showing rescue metrics: Active Claims, Rescued Foods (kg), Deliveries Completed, and Volunteer Badges. Display a real-time list of unclaimed surplus food listings nearby. Add options to quickly inspect listing details, view donor locations, and claim listings directly from the dashboard view."
+
+### 6. Nearby Radar Proximity Map (`ngo/NearbyDonations.tsx`)
+> **Prompt**: "Create a Geolocation Radar page using the Leaflet Map Engine. Fetch open surplus listings from `GET /api/donations/nearby`. Render the NGO's current location with a customized blue home marker surrounded by a soft, semi-transparent radar radius circle. Plot all available food listings within the radius using green pins. Clicking on any pin must open an interactive popover detailing food items, quantity, shelf life, donor org name, and a direct button to claim the rescue."
+
+### 7. Private Direct Messaging Hub (`components/Messages.tsx`)
+> **Prompt**: "Build a premium, private split-screen P2P Direct Messaging interface. The left column lists active chat logs with name badges, role tags (Provider/NGO), active statuses, and latest message previews. Clicking the `+` button opens a search modal filtering active contacts based on role rules (Providers search active NGOs; NGOs search active Providers). The right column shows a styled chat area with chronological message bubbles, dynamic timestamps, and phone/address quick lookup shortcuts. Set up a 5-second polling loop to fetch and sync messages in real-time."
+
+### 8. Isolated Technical Support Desk (`components/SupportChatWidget.tsx` & `admin/SupportRequests.tsx`)
+> **Prompt**: "Isolate the global floating chat widget at the bottom-right of layouts strictly for support tickets. Style and label the widget exclusively as 'Admin Support Chat' to connect users directly with the system administrator. In the Admin Panel, build a dedicated Technical Desk interface (`SupportRequests.tsx`) displaying a sidebar grid of incoming user tickets and an interactive conversation stream. Provide administrators with quick actions to write replies, view ticket statuses, and close support requests."
+
+### 9. Admin Operations Center & User Manager Drawer (`admin/Dashboard.tsx` & `admin/UserManagement.tsx`)
+> **Prompt**: "Design an Admin Operations Center displaying global platform stats: Active Providers, Active NGOs, Listed Donations, and Support Tickets. In the User Management view (`UserManagement.tsx`), build a paginated user list grid showing account details and active status switches. Clicking on any user opens a sliding drawer that queries role-specific histories from MongoDB: listing all past food donations for Providers, or listing all picked-up claims for NGOs."
+
+### 10. Donation Hotspots Heatmap (`admin/Analytics.tsx` & `admin/ActivityMap.tsx`)
+> **Prompt**: "Implement a real-time Donation Hotspots Heatmap utilizing Leaflet. Fetch the coordinates of all system users and active donations. Plot them on an interactive dashboard map using specific color-coded markers: Green (Surplus Listings), Blue (Providers), Purple (NGO Rescuers), and Red (Deactivated users). Include an absolute-positioned responsive legend map detailing the role categories for quick administrative reviews."
+
