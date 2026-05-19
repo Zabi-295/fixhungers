@@ -10,7 +10,7 @@ type Role = "provider" | "ngo" | null;
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup, resendVerification } = useAuth();
+  const { signup, resendVerification, verifyOtp } = useAuth();
   const { toast } = useToast();
   const [role, setRole] = useState<Role>(null);
   const [fullName, setFullName] = useState("");
@@ -23,6 +23,8 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,16 +41,18 @@ const Signup = () => {
     try {
       await signup(email, password, fullName, role === "provider" ? "Provider" : "NGO");
       setVerificationSent(true);
-      toast({ title: "Account Created!", description: "A verification link has been sent to your email." });
+      toast({ title: "Account Created!", description: "A verification 6-digit OTP code has been sent to your email." });
     } catch (err: any) {
       console.error("Signup error:", err);
       let msg = "Signup failed. Please try again.";
-      if (err.code === "auth/email-already-in-use") {
+      if (err.code === "auth/email-already-in-use" || err.message?.includes("already exists")) {
         msg = "This email is already registered. Please go to the Login page.";
       } else if (err.code === "auth/invalid-email") {
         msg = "The email address is invalid.";
       } else if (err.code === "auth/weak-password") {
         msg = "The password is too weak.";
+      } else {
+        msg = err.message || msg;
       }
       setError(msg);
     } finally {
@@ -56,10 +60,40 @@ const Signup = () => {
     }
   };
 
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length !== 6) {
+      toast({
+        title: "Information Required",
+        description: "Please enter the 6-digit OTP code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      await verifyOtp(email, otp);
+      toast({
+        title: "Account Activated!",
+        description: "Your account is verified. You can now log in.",
+      });
+      navigate("/login");
+    } catch (err: any) {
+      toast({
+        title: "Verification Failed",
+        description: err.message || "Invalid or expired OTP code.",
+        variant: "destructive"
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const handleResend = async () => {
     try {
       await resendVerification(email);
-      toast({ title: "Verification Resent!", description: "Check your inbox for the new link." });
+      toast({ title: "OTP Resent!", description: "Check your inbox for the new 6-digit code." });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -74,33 +108,46 @@ const Signup = () => {
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
               <Mail className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Check Your Email</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Verify Your Account</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              We've sent a verification link to <strong className="text-foreground">{email}</strong>. 
-              Please check your inbox and click the link to activate your account.
+              We've sent a 6-digit OTP verification code to <strong className="text-foreground">{email}</strong>. 
+              Please check your inbox (and spam folder) and enter it below.
             </p>
             
-            <div className="bg-secondary rounded-xl p-4 mb-6 text-left space-y-2">
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <ShieldCheck className="w-4 h-4 text-primary" /> Check your inbox (and spam folder)
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
+              <div className="flex justify-center">
+                <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <ShieldCheck className="w-4 h-4 text-primary" /> Click the verification link
-              </div>
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <ShieldCheck className="w-4 h-4 text-primary" /> Come back and login
-              </div>
+
+              <button type="submit" disabled={verifying}
+                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-50 shadow-md">
+                {verifying ? "Verifying..." : "Verify Code"}
+              </button>
+            </form>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <button onClick={handleResend}
+                className="w-full py-3 rounded-xl border border-border text-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-muted transition">
+                <Mail className="w-4 h-4" /> Resend Verification Code
+              </button>
+
+              <Link to="/login"
+                className="w-full py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-secondary/80 transition">
+                Back to Login
+              </Link>
             </div>
-
-            <button onClick={handleResend}
-              className="w-full py-3 rounded-xl border-2 border-border text-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-muted transition mb-3">
-              <Mail className="w-4 h-4" /> Resend Verification Email
-            </button>
-
-            <Link to="/login"
-              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition shadow-md">
-              Go to Login <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </div>

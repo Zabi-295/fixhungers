@@ -17,7 +17,8 @@ interface AuthContextType {
   signup: (email: string, password: string, name: string, role: "Provider" | "NGO") => Promise<void>;
   login: (email: string, password: string) => Promise<{ role: string; emailVerified: boolean }>;
   logout: () => Promise<void>;
-  resendVerification: (email?: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -40,35 +41,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for Firebase auth changes
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // If email is verified, try to fetch MongoDB user data
-        if (firebaseUser.emailVerified) {
-          try {
-            // We login to backend using the firebase UID to get our specific MongoDB JWT
-            const res = await apiFetch('/auth/login', {
-              method: 'POST',
-              body: JSON.stringify({ firebaseUid: firebaseUser.uid, email: firebaseUser.email }),
-            });
-            localStorage.setItem('token', res.token);
-            setCurrentUser({ ...res.user, uid: res.user.id, emailVerified: true });
-          } catch (err) {
-            console.error("MongoDB fetch error:", err);
+    let unsubFn: (() => void) | undefined;
+
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await apiFetch('/auth/me');
+          setCurrentUser({ ...res, uid: res.id, emailVerified: true });
+          setLoading(false);
+          return;
+        } catch (err) {
+          console.error("Token restore failed, falling back to Firebase:", err);
+          localStorage.removeItem('token');
+        }
+      }
+
+      // Fallback: Listen for Firebase auth changes
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          if (firebaseUser.emailVerified) {
+            try {
+              const res = await apiFetch('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ firebaseUid: firebaseUser.uid, email: firebaseUser.email }),
+              });
+              localStorage.setItem('token', res.token);
+              setCurrentUser({ ...res.user, uid: res.user.id, emailVerified: true });
+            } catch (err) {
+              console.error("MongoDB fetch error:", err);
+              setCurrentUser(null);
+            }
+          } else {
             setCurrentUser(null);
           }
         } else {
-          // User exists in firebase but not verified
           setCurrentUser(null);
         }
-      } else {
-        localStorage.removeItem('token');
-        setCurrentUser(null);
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
 
-    return () => unsubscribe();
+      unsubFn = unsubscribe;
+    };
+
+    initializeAuth();
+
+    return () => {
+      if (unsubFn) unsubFn();
+    };
   }, []);
 
   const signup = async (email: string, password: string, name: string, role: "Provider" | "NGO") => {
@@ -76,10 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
-    // 2. Send Firebase verification email
-    await sendEmailVerification(firebaseUser);
-
-    // 3. Create placeholder user in MongoDB
+    // 2. Create user in MongoDB and send OTP through SMTP
     await apiFetch('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ 
@@ -88,32 +105,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name, 
         role, 
         firebaseUid: firebaseUser.uid,
-        isActive: false // Will be set to true later or handled via firebase check
+        isAdminCreated: false
       }),
     });
 
-    // Sign out from firebase immediately until they verify
+    // Sign out from Firebase immediately until verified via OTP
     await signOut(auth);
   };
 
   const login = async (email: string, password: string) => {
     let firebaseUid = "";
-    let isEmailVerified = false;
     let firebaseError = null;
 
     try {
-      // 1. Try Authenticate with Firebase
+      // 1. Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       firebaseUid = firebaseUser.uid;
-      isEmailVerified = firebaseUser.emailVerified;
     } catch (fbErr: any) {
       console.log("Firebase login failed, proceeding to check MongoDB directly...");
       firebaseError = fbErr;
     }
 
     // 2. Login to MongoDB backend
-    // If Firebase failed, we only send email & password to verify via MongoDB bcrypt
     let res;
     try {
       res = await apiFetch('/auth/login', {
@@ -121,15 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email, password, firebaseUid }),
       });
     } catch (mongoErr: any) {
-      // If MongoDB also fails, throw the original Firebase error (if any) or Mongo error
-      throw firebaseError || mongoErr;
-    }
-
-    // 3. Check verification status
-    // If user is neither verified in Firebase nor active in MongoDB
-    if (!isEmailVerified && !res.user.status) {
       if (firebaseUid) await signOut(auth);
-      throw new Error("Your email is not verified. Please check your inbox.");
+      throw firebaseError || mongoErr;
     }
 
     localStorage.setItem('token', res.token);
@@ -157,13 +164,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const resendVerification = async (email?: string) => {
-    if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
-    } else {
-      // If we don't have a session, we can't easily resend via firebase without logging in
-      throw new Error("Please login first to resend verification email.");
-    }
+  const verifyOtp = async (email: string, otp: string) => {
+    await apiFetch('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  };
+
+  const resendVerification = async (email: string) => {
+    await apiFetch('/auth/resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
   };
 
   return (
@@ -175,6 +187,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       logout, 
       resendVerification,
+      verifyOtp,
       refreshUser,
     }}>
       {children}

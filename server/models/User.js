@@ -58,7 +58,9 @@ const UserSchema = new mongoose.Schema({
   reviewCount: { type: Number, default: 0 },
   rank: { type: Number, default: 0 },
   resetPasswordToken: String,
-  resetPasswordExpires: Date
+  resetPasswordExpires: Date,
+  verificationOtp: String,
+  verificationOtpExpires: Date
 });
 
 module.exports = mongoose.model('User', UserSchema);
