@@ -1,20 +1,21 @@
 const nodemailer = require('nodemailer');
 
-const sendVerificationEmail = async (email, otp) => {
-  // For testing, we use Ethereal (simulated email)
-  let transporter;
-  
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
+// Helper to construct SMTP transporter dynamically from environment variables
+const getTransporter = async () => {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
       }
     });
   } else {
+    // Fallback to simulated Ethereal account
     let testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
+    return nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
       secure: false,
@@ -24,9 +25,13 @@ const sendVerificationEmail = async (email, otp) => {
       },
     });
   }
+};
+
+const sendVerificationEmail = async (email, otp) => {
+  const transporter = await getTransporter();
 
   const info = await transporter.sendMail({
-    from: '"Fix Hunger" <no-reply@fixhunger.com>',
+    from: `"Fix Hunger" <${process.env.SMTP_USER || 'no-reply@fixhunger.com'}>`,
     to: email,
     subject: "Your OTP for Fix Hunger",
     html: `
@@ -46,7 +51,7 @@ const sendVerificationEmail = async (email, otp) => {
     `,
   });
 
-  if (!process.env.EMAIL_USER) {
+  if (!process.env.SMTP_USER) {
     console.log("-----------------------------------------");
     console.log("OTP SENT TO: " + email);
     console.log("OTP CODE: " + otp);
@@ -56,30 +61,10 @@ const sendVerificationEmail = async (email, otp) => {
 };
 
 const sendAccountCreationEmail = async (email, name, password, role) => {
-  let transporter;
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-  } else {
-    let testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-  }
+  const transporter = await getTransporter();
 
   const info = await transporter.sendMail({
-    from: '"Fix Hunger" <no-reply@fixhunger.com>',
+    from: `"Fix Hunger" <${process.env.SMTP_USER || 'no-reply@fixhunger.com'}>`,
     to: email,
     subject: "Your Account has been Created - Fix Hunger",
     html: `
@@ -102,36 +87,16 @@ const sendAccountCreationEmail = async (email, name, password, role) => {
     `,
   });
 
-  if (!process.env.EMAIL_USER) {
+  if (!process.env.SMTP_USER) {
     console.log("ACCOUNT CREATION EMAIL SENT. Preview URL: " + nodemailer.getTestMessageUrl(info));
   }
 };
 
 const sendResetPasswordEmail = async (email, resetLink) => {
-  let transporter;
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-  } else {
-    let testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-  }
+  const transporter = await getTransporter();
 
   const info = await transporter.sendMail({
-    from: '"Fix Hunger" <no-reply@fixhunger.com>',
+    from: `"Fix Hunger" <${process.env.SMTP_USER || 'no-reply@fixhunger.com'}>`,
     to: email,
     subject: "Reset Your Password - Fix Hunger",
     html: `
@@ -155,7 +120,7 @@ const sendResetPasswordEmail = async (email, resetLink) => {
     `,
   });
 
-  if (!process.env.EMAIL_USER) {
+  if (!process.env.SMTP_USER) {
     console.log("-----------------------------------------");
     console.log("PASSWORD RESET LINK SENT TO: " + email);
     console.log("RESET LINK: " + resetLink);
