@@ -118,7 +118,6 @@ const ForgotPassword = () => {
               </form>
             </>
           ) : (
-            /* Success Feedback card */
             <div className="flex flex-col items-center py-4 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-6">
                 <MailCheck className="w-8 h-8 text-emerald-500" />
@@ -128,9 +127,6 @@ const ForgotPassword = () => {
                 A secure password reset link has been dispatched to <strong className="text-foreground">{email}</strong>. 
                 Please check your inbox (and spam folder) to reset your password.
               </p>
-              <div className="p-3.5 bg-muted rounded-xl text-xs text-muted-foreground w-full mb-2">
-                <strong>Development Note:</strong> If standard SMTP is not configured in <code className="text-primary bg-primary/5 px-1 py-0.5 rounded">server/.env</code>, the mock reset link is printed inside the backend terminal logs!
-              </div>
             </div>
           )}
 
