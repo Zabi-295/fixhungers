@@ -9,7 +9,6 @@ import { useState, useRef } from "react";
 import { useDonations } from "@/context/DonationContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
 const categories = ["Produce", "Bakery", "Dairy", "Prepared Meals", "Meat", "Beverages", "Grains", "Other"];

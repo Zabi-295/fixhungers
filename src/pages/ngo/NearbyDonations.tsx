@@ -17,6 +17,8 @@ const NearbyDonations = () => {
 
   const available = donations.filter((d) => {
     if (d.status !== "Pending") return false;
+    const isExpired = new Date() > new Date(d.expiryDate);
+    if (isExpired) return false;
     const hasNgoLoc = typeof ngoProfile.lat === "number" && typeof ngoProfile.lng === "number";
     const hasProvLoc = typeof d.providerLat === "number" && typeof d.providerLng === "number";
     if (!hasNgoLoc || !hasProvLoc) return true;

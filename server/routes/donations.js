@@ -13,6 +13,17 @@ const mongoose = require('mongoose');
 // @desc     Get all donations
 router.get('/', async (req, res) => {
   try {
+    const now = new Date();
+    await Donation.updateMany(
+      {
+        expiryDate: { $lt: now.toISOString() },
+        status: 'Pending'
+      },
+      {
+        $set: { status: 'Expired' }
+      }
+    );
+
     const donations = await Donation.find().sort({ createdAt: -1 });
     res.json(donations);
   } catch (err) {

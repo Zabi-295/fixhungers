@@ -17,6 +17,7 @@ const statusColor: Record<string, string> = {
   Collected: "bg-green-100 text-green-700",
   Completed: "bg-green-100 text-green-700",
   "In Transit": "bg-blue-100 text-blue-700",
+  Expired: "bg-red-100 text-red-700",
 };
 
 const Dashboard = () => {
@@ -25,7 +26,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
 
-  const donations = providerDonations;
+  const donations = providerDonations.filter((d) => {
+    const isExpired = new Date() > new Date(d.expiryDate);
+    return d.status !== "Expired" && !(d.status === "Pending" && isExpired);
+  });
 
   const totalDonations = donations.length;
   const pendingCount = donations.filter((d) => d.status === "Pending").length;

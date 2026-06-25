@@ -26,6 +26,10 @@ const Dashboard = () => {
     isDonationAcceptedByUser(donation, currentUser?.uid, ngoProfile.fullName);
 
   const availableDonations = donations.filter((d) => {
+    // Exclude expired donations
+    const isExpired = new Date() > new Date(d.expiryDate);
+    if (isExpired || d.status === "Expired") return false;
+
     const hasNgoLoc = typeof ngoProfile.lat === "number" && typeof ngoProfile.lng === "number";
     const hasProvLoc = typeof d.providerLat === "number" && typeof d.providerLng === "number";
     if (hasNgoLoc && hasProvLoc) {

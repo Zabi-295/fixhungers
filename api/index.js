@@ -105,7 +105,7 @@ app.post('/api/ai/analyze-food', async (req, res) => {
 
 
     const result_ai = await model.generateContent([
-      "Identify this food item. Return ONLY a JSON object with: 'name', 'category', 'shelfLifeHours'.",
+      "Identify this food item. Return ONLY a JSON object with keys: 'name', 'category', and 'shelfLifeHours'. IMPORTANT constraints: 1. This donation is for immediate local distribution within a single city to prevent food spoilage. 2. Based on the food type, set a short and conservative shelfLifeHours (must be between 2 and 8 hours max: e.g., cooked hot foods/meals should be 2-3 hours, bakery/dairy 4-6 hours, beverages 6-8 hours). Do NOT exceed 8 hours under any circumstances. 3. The category must be one of: 'Produce', 'Bakery', 'Dairy', 'Prepared Meals', 'Meat', 'Beverages', 'Grains', 'Other'.",
       { inlineData: { data: base64Data, mimeType: mimeType } }
     ]);
 

@@ -8,7 +8,7 @@ const DonationSchema = new mongoose.Schema({
   expiryDate: { type: String, required: true },
   status: { 
     type: String, 
-    enum: ['Pending', 'Completed', 'In Transit', 'Collected', 'Accepted'],
+    enum: ['Pending', 'Completed', 'In Transit', 'Collected', 'Accepted', 'Expired'],
     default: 'Pending'
   },
   notes: { type: String },

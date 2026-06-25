@@ -161,8 +161,8 @@ const DonationHistory = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge className={`text-xs ${d.status === "Completed" || d.status === "Collected" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                      {d.status === "Completed" || d.status === "Collected" ? "✓" : "⏳"} {d.status}
+                    <Badge className={`text-xs ${d.status === "Completed" || d.status === "Collected" ? "bg-green-100 text-green-700" : d.status === "Expired" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                      {d.status === "Completed" || d.status === "Collected" ? "✓" : d.status === "Expired" ? "✕" : "⏳"} {d.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">

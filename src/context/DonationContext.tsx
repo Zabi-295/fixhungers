@@ -21,7 +21,7 @@ export interface Donation {
   quantity: string;
   unit: string;
   expiryDate: string;
-  status: "Pending" | "Completed" | "In Transit" | "Collected" | "Accepted";
+  status: "Pending" | "Completed" | "In Transit" | "Collected" | "Accepted" | "Expired";
   createdAt: string;
   notes: string;
   emoji: string;
