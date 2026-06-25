@@ -66,14 +66,14 @@ const DonateFood = () => {
       }
 
       toast({
-        title: "🤖 AI Food Detection",
+        title: "🍔 Food Detected",
         description: `Detected: ${data?.name || "Unknown"} — ${data?.category || ""} — ~${data?.shelfLifeHours || "?"}h shelf life`,
       });
     } catch (err: any) {
-      console.error("AI analysis failed:", err);
+      console.error("Analysis failed:", err);
       setAiError(err.message);
       toast({
-        title: "AI Analysis Failed",
+        title: "Detection Failed",
         description: err.message || "Could not recognize food. Please fill details manually.",
         variant: "destructive",
       });
@@ -186,7 +186,7 @@ const DonateFood = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Donate Food</h1>
-          <p className="text-muted-foreground text-sm">Upload a photo — AI will recognize the food automatically!</p>
+          <p className="text-muted-foreground text-sm">Upload a photo of the food item to list a new donation.</p>
         </div>
       </div>
 
@@ -196,12 +196,7 @@ const DonateFood = () => {
           <Camera className="w-5 h-5 text-primary" /> Upload Food Photo
           {isAnalyzing && (
             <Badge variant="secondary" className="ml-2 animate-pulse gap-1">
-              <Loader2 className="w-3 h-3 animate-spin" /> AI Analyzing...
-            </Badge>
-          )}
-          {aiDetected && !isAnalyzing && (
-            <Badge className="ml-2 gap-1 bg-primary/10 text-primary border-primary/20">
-              <Sparkles className="w-3 h-3" /> AI Detected
+              <Loader2 className="w-3 h-3 animate-spin" /> Analyzing...
             </Badge>
           )}
         </h2>
@@ -225,7 +220,7 @@ const DonateFood = () => {
                       <Loader2 className="w-10 h-10 animate-spin text-primary" />
                       <Sparkles className="w-4 h-4 text-primary absolute top-0 right-0 animate-pulse" />
                     </div>
-                    <span className="text-sm font-bold text-primary animate-pulse tracking-wide">AI SCANNING...</span>
+                    <span className="text-sm font-bold text-primary animate-pulse tracking-wide">SCANNING...</span>
                   </div>
                 </div>
               )}
@@ -235,7 +230,7 @@ const DonateFood = () => {
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2 max-w-sm">
                 <X className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-destructive">AI Analysis Failed</p>
+                  <p className="text-xs font-bold text-destructive">Analysis Failed</p>
                   <p className="text-[10px] text-destructive/80 leading-tight">{aiError}</p>
                 </div>
               </div>
@@ -249,8 +244,8 @@ const DonateFood = () => {
             <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
-            <p className="font-semibold text-foreground text-center text-sm mb-1">AI Food Recognition</p>
-            <p className="text-xs text-muted-foreground text-center max-w-[250px] mb-6">Take a photo or upload an image, AI will detect everything!</p>
+            <p className="font-semibold text-foreground text-center text-sm mb-1">Food Recognition</p>
+            <p className="text-xs text-muted-foreground text-center max-w-[250px] mb-6">Take a photo or upload an image to automatically fill the form!</p>
             
             <div className="flex flex-wrap justify-center gap-3 w-full max-w-xs">
               <Button 
@@ -281,16 +276,16 @@ const DonateFood = () => {
       <div className="bg-card rounded-xl border border-border p-4 sm:p-6 space-y-5">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
           <Plus className="w-5 h-5 text-primary" /> Food Item Details
-          {aiDetected && <span className="text-xs text-muted-foreground font-normal">(Auto-filled by AI — you can edit)</span>}
+          {aiDetected && <span className="text-xs text-muted-foreground font-normal">(Auto-filled — you can edit)</span>}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Item Name * {aiDetected && <Sparkles className="w-3 h-3 inline text-primary" />}</Label>
+            <Label className="text-sm font-medium">Item Name *</Label>
             <Input placeholder="e.g. Chicken Biryani" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Category * {aiDetected && <Sparkles className="w-3 h-3 inline text-primary" />}</Label>
+            <Label className="text-sm font-medium">Category *</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
               <SelectContent>
@@ -311,7 +306,7 @@ const DonateFood = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Shelf Life (Hours) * {aiDetected && <Sparkles className="w-3 h-3 inline text-primary" />}</Label>
+            <Label className="text-sm font-medium">Shelf Life (Hours) *</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 6" value={expiryHours} onChange={(e) => setExpiryHours(e.target.value)} />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">hours</span>
@@ -352,8 +347,8 @@ const DonateFood = () => {
       <div className="bg-primary/5 rounded-xl border border-primary/20 p-4 flex items-start gap-3">
         <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-foreground">AI-Powered Food Detection</p>
-          <p className="text-xs text-primary">Upload a photo and our AI will automatically identify the food, its category, and estimated shelf life. You only need to add the quantity!</p>
+          <p className="text-sm font-semibold text-foreground">Automatic Food Detection</p>
+          <p className="text-xs text-primary">Upload a photo of the food and it will automatically identify the item, its category, and estimated shelf life. You only need to add the quantity!</p>
         </div>
       </div>
     </div>

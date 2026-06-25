@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Mic, History, Settings, User, LogOut, Menu, X, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Plus, History, Settings, User, LogOut, Menu, X, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,7 +10,7 @@ import SupportChatWidget from "./SupportChatWidget";
 
 const navItems = [
   { to: "/provider/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/provider/donate", icon: Mic, label: "Donate Food (Voice)" },
+  { to: "/provider/donate", icon: Plus, label: "Donate Food" },
   { to: "/provider/history", icon: History, label: "Donation History" },
   { to: "/provider/messages", icon: MessageSquare, label: "Messages" },
   { to: "/provider/settings", icon: Settings, label: "Settings" },
