@@ -30,7 +30,9 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       <div>
         <div className="flex items-center justify-between px-5 py-5 border-b border-border">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Fix Hunger Logo" className="w-8 h-8 object-contain" />
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">F</span>
+            </div>
             <div>
               <p className="text-sm font-bold text-foreground leading-none">FixHunger Admin</p>
               <p className="text-[10px] text-muted-foreground">Super Admin</p>
@@ -117,7 +119,9 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Fix Hunger Logo" className="w-7 h-7 object-contain" />
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground text-xs font-bold">R</span>
+            </div>
             <span className="font-bold text-sm text-foreground">Admin Panel</span>
           </div>
           <ThemeToggle />

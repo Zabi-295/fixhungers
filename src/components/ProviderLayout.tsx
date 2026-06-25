@@ -24,7 +24,9 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-5 py-5 border-b border-border/50">
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Fix Hunger Logo" className="w-8 h-8 object-contain" />
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground text-sm font-bold">✓</span>
+          </div>
           <div>
             <div className="font-bold text-sm text-foreground">Fix Hunger</div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Food Provider</div>
@@ -95,7 +97,9 @@ const ProviderLayout = ({ children }: { children: React.ReactNode }) => {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Fix Hunger Logo" className="w-7 h-7 object-contain" />
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground text-xs font-bold">✓</span>
+            </div>
             <span className="font-bold text-sm text-foreground">Fix Hunger</span>
           </div>
           <ThemeToggle />

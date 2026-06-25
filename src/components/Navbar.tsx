@@ -10,7 +10,9 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-4 sm:px-8 py-4">
       <Link to="/" className="flex items-center gap-2">
-        <img src="/logo.png" alt="Fix Hunger Logo" className="w-8 h-8 object-contain" />
+        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+          <CheckCircle className="w-5 h-5 text-primary-foreground" />
+        </div>
         <span className="text-lg font-bold text-foreground">Fix Hunger</span>
       </Link>
       <div className="flex items-center gap-3">
