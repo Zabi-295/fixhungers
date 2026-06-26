@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
 import SupportChatWidget from "./SupportChatWidget";
+import Logo from "./Logo";
 
 const navItems = [
   { to: "/ngo/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -25,9 +26,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-5 py-5 border-b border-border/50">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-sm font-bold">✓</span>
-          </div>
+          <Logo size="sm" iconOnly />
           <div>
             <div className="font-bold text-sm text-foreground">Fix Hunger</div>
             <div className="text-[10px] text-primary uppercase tracking-wider font-semibold">Volunteer Portal</div>
@@ -117,9 +116,7 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-xs font-bold">✓</span>
-            </div>
+            <Logo size="xs" iconOnly />
             <span className="font-bold text-sm text-foreground">Fix Hunger</span>
           </div>
           <ThemeToggle />

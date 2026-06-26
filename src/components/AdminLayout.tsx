@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
+import Logo from "./Logo";
 
 import { MessageSquare } from "lucide-react";
 
@@ -30,9 +31,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       <div>
         <div className="flex items-center justify-between px-5 py-5 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">F</span>
-            </div>
+            <Logo size="sm" iconOnly />
             <div>
               <p className="text-sm font-bold text-foreground leading-none">FixHunger Admin</p>
               <p className="text-[10px] text-muted-foreground">Super Admin</p>
@@ -119,9 +118,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-xs font-bold">R</span>
-            </div>
+            <Logo size="xs" iconOnly />
             <span className="font-bold text-sm text-foreground">Admin Panel</span>
           </div>
           <ThemeToggle />
