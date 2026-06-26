@@ -30,7 +30,7 @@ const Logo: React.FC<LogoProps> = ({
       <div className={`${dimensions[size]} rounded-lg bg-primary/10 flex items-center justify-center shrink-0`}>
         <svg
           viewBox="0 0 100 100"
-          className="w-[80%] h-[80%]"
+          className="w-[85%] h-[85%]"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -39,15 +39,29 @@ const Logo: React.FC<LogoProps> = ({
               <stop offset="0%" stopColor="#10B981" />
               <stop offset="100%" stopColor="#059669" />
             </linearGradient>
+            <linearGradient id="logoWarm" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#D97706" />
+            </linearGradient>
             <linearGradient id="logoAccent" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#34D399" />
               <stop offset="100%" stopColor="#10B981" />
             </linearGradient>
           </defs>
-          <circle cx="50" cy="50" r="36" stroke="url(#logoPrimary)" strokeWidth="6" fill="none" strokeDasharray="170 50" strokeLinecap="round" transform="rotate(-45 50 50)" />
-          <path d="M30 55 C30 68, 70 68, 70 55 C65 55, 35 55, 30 55 Z" fill="url(#logoPrimary)" />
-          <path d="M50 32 C50 32, 43 25, 37 31 C31 37, 44 49, 50 53 C56 49, 69 37, 63 31 C57 25, 50 32, 50 32 Z" fill="url(#logoAccent)" />
-          <path d="M68 24 L70 27 L73 27 L71 29 L72 32 L70 30 L68 32 L69 29 L67 27 L68 27 Z" fill="#F59E0B" />
+          
+          {/* Cradling Hand */}
+          <path d="M 22,58 C 22,72, 38,82, 50,82 C 62,82, 78,72, 78,58 C 74,68, 62,74, 50,74 C 38,74, 26,68, 22,58 Z" fill="url(#logoPrimary)" />
+          
+          {/* Food Bowl */}
+          <path d="M 30,50 C 30,64, 70,64, 70,50 Z" fill="url(#logoAccent)" />
+          <rect x="26" y="46" width="48" height="4" rx="2" fill="url(#logoPrimary)" />
+          
+          {/* Heart Steam */}
+          <path d="M 50,18 C 50,18, 43,10, 36,16 C 30,22, 43,36, 50,40 C 57,36, 70,22, 64,16 C 57,10, 50,18, 50,18 Z" fill="url(#logoWarm)" />
+          
+          {/* Sparkles */}
+          <path d="M 72,22 L 74,25 L 77,25 L 75,27 L 76,30 L 74,28 L 72,30 L 73,27 L 71,25 L 72,25 Z" fill="#F59E0B" />
+          <path d="M 24,30 L 25,32 L 27,32 L 25,33 L 26,35 L 24,34 L 22,35 L 23,33 L 21,32 L 23,32 Z" fill="#34D399" />
         </svg>
       </div>
       {!iconOnly && (
