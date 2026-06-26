@@ -48,7 +48,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // 2. Show Browser Notification (if permission granted)
     if (permission === "granted") {
       new Notification(title, {
-        icon: "/logo.svg",
+        icon: "/logo-192.png",
         ...options,
       });
     }

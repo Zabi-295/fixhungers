@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
+      <!-- Background circle -->
+      <circle cx="50" cy="50" r="49" fill="#FFFFFF" />
+      <circle cx="50" cy="50" r="46" stroke="#68A14E" stroke-width="2.5" fill="none" />
+
+      <!-- Left Hand Continuous Path -->
+      <path d="M 37,60 
+               C 37,51 34,44 28,40 
+               C 24,37 23,32 25,28 
+               C 27,25 29,26 31,30 
+               C 33,34 35,38 35,38 
+               C 35,38 32,32 30,24 
+               C 29,20 30,17 32,18 
+               C 34,19 36,25 36,31 
+               C 36,31 34.5,23 35.5,15 
+               C 36.2,10 38,10 39,15 
+               C 40,20 41.5,27 41.5,31 
+               C 41.5,31 41.5,22 43,14 
+               C 44,10 46,10 47,14 
+               C 48,18 48.5,26 48.5,30 
+               C 48.5,30 49,24 50.5,18 
+               C 51.5,14 53.5,14 54,18 
+               C 54.5,22 54.5,30 53.5,36 
+               C 51.5,43 49,52 49,60" 
+            stroke="#68A14E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" id="left-hand" />
+
+      <!-- Symmetrical Right Hand -->
+      <use href="#left-hand" transform="translate(100, 0) scale(-1, 1)" />
+
+      <!-- Grains mound inside the bowl -->
+      <path d="M 33,32 Q 50,21 67,32 Z" fill="#88C057" stroke="#68A14E" stroke-width="1" />
+      <g fill="#558B2F">
+        <circle cx="36" cy="31" r="1.1" /><circle cx="45" cy="26" r="1.1" /><circle cx="55" cy="26" r="1.1" /><circle cx="64" cy="31" r="1.1" />
+      </g>
+      <!-- Bowl -->
+      <path d="M 33,32 C 33,48 67,48 67,32 Z" fill="#FFFFFF" stroke="#68A14E" stroke-width="1.5" />
+      <path d="M 32,32 L 68,32" stroke="#68A14E" stroke-width="1.8" fill="none" />
+    </svg>
+  </div>
+</body>
+</html>
