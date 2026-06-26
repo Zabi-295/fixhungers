@@ -1,26 +1,94 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
-  <defs>
-    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10B981" />
-      <stop offset="100%" stop-color="#059669" />
-    </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399" />
-      <stop offset="100%" stop-color="#10B981" />
-    </linearGradient>
-  </defs>
-  <!-- Background soft rounded rect -->
-  <rect width="100" height="100" rx="24" fill="#ECFDF5" />
-  
-  <!-- Outer circular dash track representing rescue logistics -->
-  <circle cx="50" cy="50" r="36" stroke="url(#primaryGrad)" stroke-width="6" fill="none" stroke-dasharray="170 50" stroke-linecap="round" transform="rotate(-45 50 50)" />
-  
-  <!-- Stylized bowl representing food rescue -->
-  <path d="M30 55 C30 68, 70 68, 70 55 C65 55, 35 55, 30 55 Z" fill="url(#primaryGrad)" />
-  
-  <!-- Heart representing care and charity rising from the food bowl -->
-  <path d="M50 32 C50 32, 43 25, 37 31 C31 37, 44 49, 50 53 C56 49, 69 37, 63 31 C57 25, 50 32, 50 32 Z" fill="url(#accentGrad)" />
-  
-  <!-- Spark of hope/AI optimization -->
-  <path d="M68 24 L70 27 L73 27 L71 29 L72 32 L70 30 L68 32 L69 29 L67 27 L68 27 Z" fill="#F59E0B" />
+  <!-- Background circle (optional soft background or transparent) -->
+  <circle cx="50" cy="50" r="49" fill="#FFFFFF" />
+
+  <!-- Outer circular border -->
+  <circle cx="50" cy="50" r="46" stroke="#68A14E" stroke-width="2.5" fill="none" />
+
+  <g id="logo-graphics">
+    <!-- 1. The Hands (cradling the bowl) -->
+    <!-- Left Hand Group -->
+    <g id="left-hand" stroke="#68A14E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <!-- Wrist and outer hand outline -->
+      <path d="M 37,60 C 36,52 32,45 27,41 C 24,37 23,33 24,30 C 25,28 27,28 28.5,30 C 30.5,32.5 32.5,36 34,39" />
+      <!-- Index finger -->
+      <path d="M 28,40 C 27,32 27.5,24 29,19 C 29.8,16 31.2,16 32,19 C 33,23 34,30 34.5,34" />
+      <!-- Middle finger -->
+      <path d="M 33.5,33 C 33,24 34.5,16 36,13 C 36.8,11 38.2,11 39,13 C 40,17 41,25 41,31" />
+      <!-- Ring finger -->
+      <path d="M 40,30 C 40,22 41.5,15 43,12 C 43.8,10 45.2,10 46,12 C 47,16 47.5,24 47.5,30" />
+      <!-- Pinky finger and inner palm edge -->
+      <path d="M 46.5,29 C 47,23 48.5,18 49.5,16 C 50.3,14.5 51.5,14.5 52,16 C 52.8,19 53,26 52,32 C 51,38 49,46 49,58" />
+    </g>
+
+    <!-- Symmetrical Right Hand (mirrored perfectly across X=50) -->
+    <use href="#left-hand" transform="translate(100, 0) scale(-1, 1)" />
+
+    <!-- 2. Grains mound inside the bowl (drawn behind the bowl rim) -->
+    <!-- Base mound shape -->
+    <path d="M 33,32 Q 50,21 67,32 Z" fill="#88C057" stroke="#68A14E" stroke-width="1" />
+    <!-- Individual grain textures in the bowl -->
+    <g fill="#558B2F">
+      <circle cx="36" cy="31" r="1.1" />
+      <circle cx="45" cy="26" r="1.1" />
+      <circle cx="55" cy="26" r="1.1" />
+      <circle cx="64" cy="31" r="1.1" />
+      <circle cx="41" cy="30" r="1.1" />
+      <circle cx="50" cy="26" r="1.1" />
+      <circle cx="59" cy="30" r="1.1" />
+    </g>
+    <g fill="#AED581">
+      <circle cx="39" cy="29" r="1.1" />
+      <circle cx="48" cy="25" r="1.1" />
+      <circle cx="58" cy="27" r="1.1" />
+      <circle cx="44" cy="28" r="1.1" />
+      <circle cx="53" cy="27" r="1.1" />
+      <circle cx="62" cy="32" r="1.1" />
+    </g>
+    <g fill="#68A14E">
+      <circle cx="42" cy="27" r="1.1" />
+      <circle cx="52" cy="25" r="1.1" />
+      <circle cx="61" cy="29" r="1.1" />
+      <circle cx="38" cy="32" r="1.1" />
+      <circle cx="47" cy="27" r="1.1" />
+      <circle cx="56" cy="28" r="1.1" />
+    </g>
+
+    <!-- 3. The Food Bowl (Solid fill masks fingers behind it) -->
+    <path d="M 33,32 C 33,48 67,48 67,32 Z" fill="#FFFFFF" stroke="#68A14E" stroke-width="1.5" />
+    <!-- Bowl top rim -->
+    <path d="M 32,32 L 68,32" stroke="#68A14E" stroke-width="1.8" fill="none" />
+
+    <!-- Decorative carving on the bowl (Leaves/Vines) -->
+    <!-- Center stem -->
+    <path d="M 50,33 L 50,47" stroke="#68A14E" stroke-width="0.8" stroke-dasharray="1 1.5" fill="none" />
+    <!-- Vines -->
+    <path d="M 36,36 C 41,41 45,41 50,36 C 55,41 59,41 64,36" stroke="#68A14E" stroke-width="1" fill="none" />
+    <path d="M 38,40 C 42,44 45,44 50,40 C 55,44 58,44 62,40" stroke="#68A14E" stroke-width="0.8" fill="none" />
+    <!-- Left Leaf carving -->
+    <path d="M 45,40 Q 42,37 45,34 Q 48,37 45,40 Z" fill="#68A14E" opacity="0.85" />
+    <!-- Right Leaf carving -->
+    <path d="M 55,40 Q 52,37 55,34 Q 58,37 55,40 Z" fill="#68A14E" opacity="0.85" />
+
+    <!-- 4. Scattered Grains at the bottom -->
+    <g stroke="#68A14E" stroke-width="0.4">
+      <ellipse cx="44" cy="63" rx="2.2" ry="1" transform="rotate(-20 44 63)" fill="#68A14E" />
+      <ellipse cx="48" cy="65" rx="2" ry="0.9" transform="rotate(35 48 65)" fill="#AED581" />
+      <ellipse cx="52" cy="65" rx="2" ry="0.9" transform="rotate(-30 52 65)" fill="#AED581" />
+      <ellipse cx="56" cy="63" rx="2.2" ry="1" transform="rotate(20 56 63)" fill="#68A14E" />
+      <ellipse cx="39" cy="62" rx="1.8" ry="0.8" transform="rotate(-40 39 62)" fill="#AED581" />
+      <ellipse cx="61" cy="62" rx="1.8" ry="0.8" transform="rotate(40 61 62)" fill="#AED581" />
+      <!-- Extra scattered grains -->
+      <ellipse cx="35" cy="63" rx="1.5" ry="0.7" transform="rotate(15 35 63)" fill="#68A14E" />
+      <ellipse cx="65" cy="63" rx="1.5" ry="0.7" transform="rotate(-15 65 63)" fill="#68A14E" />
+      <ellipse cx="31" cy="62" rx="1.2" ry="0.6" transform="rotate(-10 31 62)" fill="#AED581" />
+      <ellipse cx="69" cy="62" rx="1.2" ry="0.6" transform="rotate(10 69 62)" fill="#AED581" />
+    </g>
+  </g>
+
+  <!-- 5. Logo Typography -->
+  <!-- FIX HUNGER -->
+  <text x="50" y="77" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="9" font-weight="900" fill="#68A14E" text-anchor="middle" letter-spacing="0.5">FIX HUNGER</text>
+  <!-- BRIDGING DONORS & COMMUNITIES -->
+  <text x="50" y="82.5" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="3" font-weight="700" fill="#68A14E" text-anchor="middle" letter-spacing="0.2">BRIDGING DONORS &amp; COMMUNITIES</text>
 </svg>
