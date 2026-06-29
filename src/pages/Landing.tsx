@@ -77,9 +77,6 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <Logo size="md" />
-            <span className="font-extrabold text-lg sm:text-xl tracking-tight text-foreground">
-              FixHunger
-            </span>
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-muted-foreground">
@@ -142,48 +139,56 @@ const Landing = () => {
       </section>
 
       {/* 3. Stats Section */}
-      <section id="stats" className="py-12 border-y border-border bg-card/30">
+      <section id="stats" className="py-16 bg-gradient-to-b from-transparent via-muted/20 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             
-            <div className="p-4 space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-2">
-                <CheckCircle className="w-6 h-6" />
+            <div className="bg-card/45 backdrop-blur-sm border border-border/85 rounded-3xl p-6 flex items-center gap-4 hover:scale-[1.02] transition-transform shadow-sm hover:shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <CheckCircle className="w-7 h-7" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.completedRescues}
+              <div className="space-y-0.5 text-left">
+                <div className="text-3xl font-black tracking-tight text-foreground">
+                  {stats.completedRescues}
+                </div>
+                <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Completed Rescues</div>
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground font-semibold">Completed Rescues</div>
             </div>
 
-            <div className="p-4 space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mx-auto mb-2">
-                <Utensils className="w-6 h-6" />
+            <div className="bg-card/45 backdrop-blur-sm border border-border/85 rounded-3xl p-6 flex items-center gap-4 hover:scale-[1.02] transition-transform shadow-sm hover:shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                <Utensils className="w-7 h-7" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.totalDonations}
+              <div className="space-y-0.5 text-left">
+                <div className="text-3xl font-black tracking-tight text-foreground">
+                  {stats.totalDonations}
+                </div>
+                <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Meals Shared</div>
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground font-semibold">Total Meals Logged</div>
             </div>
 
-            <div className="p-4 space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mx-auto mb-2">
-                <Users className="w-6 h-6" />
+            <div className="bg-card/45 backdrop-blur-sm border border-border/85 rounded-3xl p-6 flex items-center gap-4 hover:scale-[1.02] transition-transform shadow-sm hover:shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0">
+                <Users className="w-7 h-7" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.activeNGOs}
+              <div className="space-y-0.5 text-left">
+                <div className="text-3xl font-black tracking-tight text-foreground">
+                  {stats.activeNGOs}
+                </div>
+                <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Partner NGOs</div>
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground font-semibold">Partner NGOs</div>
             </div>
 
-            <div className="p-4 space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mx-auto mb-2">
-                <Building className="w-6 h-6" />
+            <div className="bg-card/45 backdrop-blur-sm border border-border/85 rounded-3xl p-6 flex items-center gap-4 hover:scale-[1.02] transition-transform shadow-sm hover:shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                <Building className="w-7 h-7" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.activeProviders}
+              <div className="space-y-0.5 text-left">
+                <div className="text-3xl font-black tracking-tight text-foreground">
+                  {stats.activeProviders}
+                </div>
+                <div className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Food Providers</div>
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground font-semibold">Food Providers</div>
             </div>
 
           </div>
@@ -367,19 +372,49 @@ const Landing = () => {
       </section>
 
       {/* 6. Footer Section */}
-      <footer className="mt-auto border-t border-border bg-card/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Logo size="sm" />
-            <span className="font-extrabold text-sm tracking-tight text-foreground">
-              FixHunger Platform © 2026
-            </span>
+      <footer className="mt-auto border-t border-border bg-card/40 backdrop-blur-sm py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            
+            {/* Branding Column */}
+            <div className="space-y-4 col-span-1 md:col-span-2 text-left">
+              <div className="flex items-center gap-2">
+                <Logo size="md" iconOnly />
+                <span className="font-extrabold text-xl tracking-tight text-foreground">Fix Hunger</span>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                A community-driven digital bridge connecting restaurants and food retailers directly with verified charity distribution organizations.
+              </p>
+            </div>
+
+            {/* Navigation Column */}
+            <div className="space-y-3 text-left">
+              <h4 className="text-sm font-bold text-foreground uppercase tracking-wider">Platform</h4>
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <a href="#how-it-works" className="hover:text-primary transition-colors">How it works</a>
+                <a href="#stats" className="hover:text-primary transition-colors">Impact Stats</a>
+                <a href="#leaderboard" className="hover:text-primary transition-colors">Leaderboards</a>
+              </div>
+            </div>
+
+            {/* Account CTAs Column */}
+            <div className="space-y-3 text-left">
+              <h4 className="text-sm font-bold text-foreground uppercase tracking-wider">Get Involved</h4>
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <Link to="/signup" className="hover:text-primary transition-colors">Register Business</Link>
+                <Link to="/signup" className="hover:text-primary transition-colors">NGO Partnership</Link>
+                <Link to="/login" className="hover:text-primary transition-colors">Secure Sign In</Link>
+              </div>
+            </div>
+
           </div>
-          
-          <div className="flex gap-6 text-xs text-muted-foreground font-semibold">
-            <a href="#how-it-works" className="hover:text-primary transition-colors">How it works</a>
-            <a href="#stats" className="hover:text-primary transition-colors">Stats</a>
-            <a href="#leaderboard" className="hover:text-primary transition-colors">Leaderboard</a>
+
+          <div className="border-t border-border/80 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-medium">
+            <p>© 2026 Fix Hunger Platform. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="hover:underline">Privacy Policy</a>
+              <a href="#" className="hover:underline">Terms of Service</a>
+            </div>
           </div>
         </div>
       </footer>
