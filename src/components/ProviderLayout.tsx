@@ -1,7 +1,8 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Plus, History, Settings, User, LogOut, Menu, X, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Plus, History, Settings, User, LogOut, Menu, X, MessageSquare, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -80,6 +81,25 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 const ProviderLayout = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const { currentUser, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-sm font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (

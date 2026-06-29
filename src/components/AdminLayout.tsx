@@ -1,11 +1,12 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardList, BarChart3, User, Settings, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, BarChart3, User, Settings, LogOut, Menu, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./ThemeToggle";
 import Logo from "./Logo";
+import { useAuth } from "@/context/AuthContext";
 
 import { MessageSquare } from "lucide-react";
 
@@ -102,6 +103,25 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 const AdminLayout = ({ children }: { children: ReactNode }) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const { currentUser, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-sm font-semibold">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useDonations } from "@/context/DonationContext";
 import { useAuth } from "@/context/AuthContext";
 import NGOVerificationGate from "./NGOVerificationGate";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -104,6 +104,12 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { currentUser, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, loading, navigate]);
 
   if (loading) {
     return (
