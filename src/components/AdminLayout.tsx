@@ -108,8 +108,13 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !currentUser) {
-      navigate("/login");
+    if (!loading) {
+      if (!currentUser) {
+        navigate("/login");
+      } else if (currentUser.role?.toLowerCase() !== "admin") {
+        console.warn("Non-admin user tried to access admin page. Redirecting...");
+        navigate("/");
+      }
     }
   }, [currentUser, loading, navigate]);
 
