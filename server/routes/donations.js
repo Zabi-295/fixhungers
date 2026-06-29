@@ -3,6 +3,7 @@ const router = express.Router();
 const Donation = require('../models/Donation.js');
 const User = require('../models/User');
 const auth = require('../middleware/auth.js');
+const verifiedNGO = require('../middleware/verifiedNGO.js');
 const mongoose = require('mongoose');
 
 // @route    GET api/donations
@@ -54,7 +55,7 @@ router.post('/', auth, async (req, res) => {
 
 // @route    PUT api/donations/:id
 // @desc     Update a donation
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', [auth, verifiedNGO], async (req, res) => {
   try {
     let donation = await Donation.findById(req.params.id);
     if (!donation) return res.status(404).json({ msg: 'Donation not found' });

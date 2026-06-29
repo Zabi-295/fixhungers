@@ -3,10 +3,11 @@ const router = express.Router();
 const Conversation = require('../models/Conversation.js');
 const User = require('../models/User.js');
 const auth = require('../middleware/auth.js');
+const verifiedNGO = require('../middleware/verifiedNGO.js');
 
 // @route   GET api/chats
 // @desc    Get all conversations for logged-in user
-router.get('/', auth, async (req, res) => {
+router.get('/', [auth, verifiedNGO], async (req, res) => {
   try {
     const chats = await Conversation.find({
       participants: req.user.id
@@ -23,7 +24,7 @@ router.get('/', auth, async (req, res) => {
 
 // @route   GET api/chats/:userId
 // @desc    Get or create a conversation between current user and another user
-router.get('/:userId', auth, async (req, res) => {
+router.get('/:userId', [auth, verifiedNGO], async (req, res) => {
   try {
     const otherUser = await User.findById(req.params.userId).select('name email role profile isActive');
     if (!otherUser) {
@@ -53,7 +54,7 @@ router.get('/:userId', auth, async (req, res) => {
 
 // @route   POST api/chats/:userId
 // @desc    Send a message to a user
-router.post('/:userId', auth, async (req, res) => {
+router.post('/:userId', [auth, verifiedNGO], async (req, res) => {
   try {
     const { message } = req.body;
     if (!message || !message.trim()) {

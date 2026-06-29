@@ -12,8 +12,17 @@ export interface RegisteredUser {
   avatar?: string;
    emailVerified?: boolean;
    lat?: number;
-   lng?: number;
-   location?: string;
+  lng?: number;
+  location?: string;
+  verificationStatus?: 'unsubmitted' | 'pending' | 'verified' | 'rejected';
+  verificationDocs?: {
+    ngoCertificate?: string;
+    cnicFront?: string;
+    cnicBack?: string;
+    submittedAt?: string;
+    reviewedAt?: string;
+    rejectionReason?: string;
+  };
 }
 
 interface AdminContextType {
@@ -22,6 +31,7 @@ interface AdminContextType {
   toggleUserStatus: (id: string) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   editUser: (id: string, updates: Partial<RegisteredUser>) => Promise<void>;
+  verifyNGO: (id: string, action: "approve" | "reject", reason?: string) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -45,6 +55,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
           lat: typeof user.lat === "number" ? user.lat : undefined,
           lng: typeof user.lng === "number" ? user.lng : undefined,
           location: user.location || user.profile?.address || user.profile?.location || "",
+          verificationStatus: user.verificationStatus || "unsubmitted",
+          verificationDocs: user.verificationDocs,
         }))
         .sort((a: any, b: any) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
 
@@ -96,8 +108,16 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     fetchUsers();
   };
 
+  const verifyNGO = async (id: string, action: "approve" | "reject", reason?: string) => {
+    await apiFetch(`/users/${id}/verify-action`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, rejectionReason: reason })
+    });
+    fetchUsers();
+  };
+
   return (
-    <AdminContext.Provider value={{ users, addUser, toggleUserStatus, deleteUser, editUser }}>
+    <AdminContext.Provider value={{ users, addUser, toggleUserStatus, deleteUser, editUser, verifyNGO }}>
       {children}
     </AdminContext.Provider>
   );

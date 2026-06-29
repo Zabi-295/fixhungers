@@ -32,6 +32,15 @@ export interface UserProfile {
   createdAt: any;
   emailVerified: boolean;
   profile?: any;
+  verificationStatus?: 'unsubmitted' | 'pending' | 'verified' | 'rejected';
+  verificationDocs?: {
+    ngoCertificate?: string;
+    cnicFront?: string;
+    cnicBack?: string;
+    submittedAt?: string;
+    reviewedAt?: string;
+    rejectionReason?: string;
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

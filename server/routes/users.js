@@ -57,6 +57,65 @@ router.put('/:id/status', auth, async (req, res) => {
   }
 });
 
+// @route    PUT api/users/:id/verify-action
+// @desc     Approve or reject NGO registration (Admin only)
+router.put('/:id/verify-action', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({ msg: 'Access denied. Administrator permissions required.' });
+    }
+
+    const { action, rejectionReason } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    if (user.role !== 'NGO') {
+      return res.status(400).json({ msg: 'Only NGO verification status can be modified.' });
+    }
+
+    if (action === 'approve') {
+      user.verificationStatus = 'verified';
+      if (user.verificationDocs) {
+        user.verificationDocs.reviewedAt = new Date();
+        user.verificationDocs.rejectionReason = undefined;
+      }
+    } else if (action === 'reject') {
+      user.verificationStatus = 'rejected';
+      if (user.verificationDocs) {
+        user.verificationDocs.reviewedAt = new Date();
+        user.verificationDocs.rejectionReason = rejectionReason || 'Documents uploaded were invalid or incomplete.';
+      }
+    } else {
+      return res.status(400).json({ msg: 'Invalid action. Must be approve or reject.' });
+    }
+
+    await user.save();
+
+    const { sendNGOApprovalEmail, sendNGORejectionEmail } = require('../utils/emailService.js');
+    if (action === 'approve') {
+      try {
+        await sendNGOApprovalEmail(user.email, user.name);
+      } catch (err) {
+        console.error("Failed to send approval email:", err.message);
+      }
+    } else {
+      try {
+        await sendNGORejectionEmail(user.email, user.name, user.verificationDocs.rejectionReason);
+      } catch (err) {
+        console.error("Failed to send rejection email:", err.message);
+      }
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Verify action error:", err.message);
+    res.status(500).send('Server Error: ' + err.message);
+  }
+});
+
 // @route    PUT api/users/:id
 // @desc     Edit user details (Admin only)
 router.put('/:id', auth, async (req, res) => {

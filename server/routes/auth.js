@@ -111,7 +111,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile: user.profile, status: user.isActive, rating: user.rating, reviewCount: user.reviewCount, rank: user.rank } });
+        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile: user.profile, status: user.isActive, rating: user.rating, reviewCount: user.reviewCount, rank: user.rank, verificationStatus: user.verificationStatus, verificationDocs: user.verificationDocs } });
       }
     );
   } catch (err) {
@@ -252,6 +252,50 @@ router.post('/resend-otp', async (req, res) => {
     res.json({ msg: 'A new 6-digit verification OTP has been sent to your email address' });
   } catch (err) {
     console.error("Resend OTP error:", err.message);
+    res.status(500).json({ msg: 'Server error: ' + err.message });
+  }
+});
+
+// @route    POST api/auth/ngo-verify
+// @desc     Submit NGO verification documents
+router.post('/ngo-verify', auth, async (req, res) => {
+  const { ngoCertificate, cnicFront, cnicBack } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    if (user.role !== 'NGO') {
+      return res.status(400).json({ msg: 'Only NGO accounts can submit verification documents' });
+    }
+
+    user.verificationStatus = 'pending';
+    user.verificationDocs = {
+      ngoCertificate,
+      cnicFront,
+      cnicBack,
+      submittedAt: new Date(),
+      rejectionReason: undefined
+    };
+
+    await user.save();
+
+    res.json({
+      msg: 'Verification documents submitted successfully. Your account is now under review.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.isActive,
+        verificationStatus: user.verificationStatus,
+        verificationDocs: user.verificationDocs
+      }
+    });
+  } catch (err) {
+    console.error("NGO Verify submit error:", err.message);
     res.status(500).json({ msg: 'Server error: ' + err.message });
   }
 });

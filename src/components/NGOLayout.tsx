@@ -2,7 +2,10 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, MapPin, History, User, LogOut, MessageSquare, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDonations } from "@/context/DonationContext";
+import { useAuth } from "@/context/AuthContext";
+import NGOVerificationGate from "./NGOVerificationGate";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -100,6 +103,29 @@ const NGOLayout = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-sm font-semibold">Loading volunteer portal...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser?.role === "NGO" && currentUser?.verificationStatus !== "verified") {
+    return (
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md flex justify-center mb-2">
+          <Logo size="md" />
+        </div>
+        <NGOVerificationGate />
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (

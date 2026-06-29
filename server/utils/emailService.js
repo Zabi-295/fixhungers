@@ -129,4 +129,69 @@ const sendResetPasswordEmail = async (email, resetLink) => {
   }
 };
 
-module.exports = { sendVerificationEmail, sendAccountCreationEmail, sendResetPasswordEmail };
+const sendNGOApprovalEmail = async (email, name) => {
+  const transporter = await getTransporter();
+
+  const info = await transporter.sendMail({
+    from: `"Fix Hunger" <${process.env.SMTP_USER || 'no-reply@fixhunger.com'}>`,
+    to: email,
+    subject: "Your NGO Account has been Approved! - Fix Hunger",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #4CAF50; text-align: center;">NGO Verification Approved!</h2>
+        <p>Hello <strong>${name}</strong>,</p>
+        <p>Congratulations! Your NGO profile has been reviewed and **approved** by the Fix Hunger administrators.</p>
+        <p>Your account is now fully active. You can log in to claim donations, coordinate rescues, and access the volunteer portal.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://fixhungers.vercel.app/login" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Go to Dashboard</a>
+        </div>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #888; text-align: center;">Fix Hunger Team</p>
+      </div>
+    `,
+  });
+
+  if (!process.env.SMTP_USER) {
+    console.log("-----------------------------------------");
+    console.log("NGO APPROVAL EMAIL SENT TO: " + email);
+    console.log("Preview URL: " + nodemailer.getTestMessageUrl(info));
+    console.log("-----------------------------------------");
+  }
+};
+
+const sendNGORejectionEmail = async (email, name, reason) => {
+  const transporter = await getTransporter();
+
+  const info = await transporter.sendMail({
+    from: `"Fix Hunger" <${process.env.SMTP_USER || 'no-reply@fixhunger.com'}>`,
+    to: email,
+    subject: "NGO Verification Status Update - Fix Hunger",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #d9534f; text-align: center;">Verification Documents Rejected</h2>
+        <p>Hello <strong>${name}</strong>,</p>
+        <p>Thank you for submitting your documents. Unfortunately, our administrators could not approve your NGO registration at this time due to the following reason:</p>
+        <div style="background: #fdf7f7; border-left: 3px solid #d9534f; padding: 15px; border-radius: 4px; margin: 20px 0; color: #b94a48;">
+          <strong>Rejection Reason:</strong><br/>
+          ${reason}
+        </div>
+        <p>Please log in to your account and re-submit valid documents (Registration Certificate and CNIC Front/Back) so we can review your application again.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://fixhungers.vercel.app/login" style="background: #d9534f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Re-upload Documents</a>
+        </div>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #888; text-align: center;">Fix Hunger Team</p>
+      </div>
+    `,
+  });
+
+  if (!process.env.SMTP_USER) {
+    console.log("-----------------------------------------");
+    console.log("NGO REJECTION EMAIL SENT TO: " + email);
+    console.log("REASON: " + reason);
+    console.log("Preview URL: " + nodemailer.getTestMessageUrl(info));
+    console.log("-----------------------------------------");
+  }
+};
+
+module.exports = { sendVerificationEmail, sendAccountCreationEmail, sendResetPasswordEmail, sendNGOApprovalEmail, sendNGORejectionEmail };

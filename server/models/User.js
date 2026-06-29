@@ -54,6 +54,19 @@ const UserSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
+  verificationStatus: {
+    type: String,
+    enum: ['unsubmitted', 'pending', 'verified', 'rejected'],
+    default: 'unsubmitted'
+  },
+  verificationDocs: {
+    ngoCertificate: String,
+    cnicFront: String,
+    cnicBack: String,
+    submittedAt: Date,
+    reviewedAt: Date,
+    rejectionReason: String
+  },
   rating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },
   rank: { type: Number, default: 0 },

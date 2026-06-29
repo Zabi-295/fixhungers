@@ -26,14 +26,10 @@ if (process.env.GEMINI_API_KEY) {
 
 
 // MongoDB Connection with Caching for Vercel
-let isConnected = false;
 const connectDB = async () => {
-  if (isConnected) return;
+  if (mongoose.connection.readyState >= 1) return;
   try {
-    const db = await mongoose.connect(process.env.MONGO_URI, {
-      bufferCommands: false,
-    });
-    isConnected = db.connections[0].readyState;
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
   } catch (err) {
     console.error("MongoDB Connection Error:", err.message);
@@ -152,7 +148,7 @@ app.post('/api/ai/chat', async (req, res) => {
 
 // Basic health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', mongodb: isConnected ? 'connected' : 'disconnected' });
+  res.json({ status: 'ok', mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
 });
 
 const PORT = process.env.PORT || 5001;
