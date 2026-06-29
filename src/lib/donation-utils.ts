@@ -21,7 +21,7 @@ export const toIsoDateString = (value: unknown, fallback: Date | string = new Da
   return new Date(fallback).toISOString();
 };
 
-export const resolveExpiryDate = (rawExpiry: unknown, createdAt: string, fallbackHours = 4) => {
+export const resolveExpiryDate = (rawExpiry: unknown, createdAt: string, fallbackHours = 24) => {
   if (typeof rawExpiry === "string") {
     const parsed = new Date(rawExpiry);
     if (!Number.isNaN(parsed.getTime())) {
