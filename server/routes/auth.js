@@ -83,7 +83,30 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user) {
-      return res.status(400).json({ msg: 'No MongoDB profile found for this account' });
+      if (firebaseUid) {
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('FirebaseAutoHealed123!', salt);
+        
+        const namePart = email.split('@')[0];
+        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        
+        const isEmailAdmin = email.toLowerCase().includes('admin') || email === 'adminfixhunger@gmail.com';
+        const finalRole = isEmailAdmin ? 'Admin' : (req.body.role || 'NGO');
+
+        user = new User({
+          email,
+          name: formattedName,
+          role: finalRole,
+          password: hashedPassword,
+          firebaseUid,
+          isActive: true, // Already authenticated/verified in Firebase
+          verificationStatus: finalRole === 'NGO' ? 'unsubmitted' : undefined
+        });
+        await user.save();
+      } else {
+        return res.status(400).json({ msg: 'No MongoDB profile found for this account' });
+      }
     }
 
     // Force block unverified users from logging in (except Admin bypass)

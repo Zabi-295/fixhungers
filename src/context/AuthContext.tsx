@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut(auth);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, role?: string) => {
     let firebaseUid = "";
     let firebaseError = null;
 
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       res = await apiFetch('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password, firebaseUid }),
+        body: JSON.stringify({ email, password, firebaseUid, role }),
       });
     } catch (mongoErr: any) {
       if (firebaseUid) await signOut(auth);

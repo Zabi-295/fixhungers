@@ -29,7 +29,7 @@ const Login = () => {
     setLoading(true);
     setError("");
     try {
-      const result = await login(email, password);
+      const result = await login(email, password, role);
       console.log("Login Result Role:", result.role); // Debugging ke liye
       
       if (!result.emailVerified) {
