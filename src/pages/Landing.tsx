@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Badge } from "@/components/ui/badge";
 
 interface Stats {
   completedRescues: number;
