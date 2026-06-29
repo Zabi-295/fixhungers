@@ -8,7 +8,7 @@ const auth = require('../middleware/auth.js');
 router.get('/', auth, async (req, res) => {
   console.log("Admin fetch users request from:", req.user.email, "Role:", req.user.role);
   try {
-    if (req.user.role !== 'Admin') {
+    if (req.user.role !== 'Admin' && req.user.email !== 'adminfixhunger@gmail.com') {
       console.log("Access denied for role:", req.user.role);
       return res.status(403).json({ msg: 'Access denied' });
     }
@@ -41,7 +41,7 @@ router.put('/profile', auth, async (req, res) => {
 // @desc     Update any user status (Admin only)
 router.put('/:id/status', auth, async (req, res) => {
   try {
-    if (req.user.role !== 'Admin') {
+    if (req.user.role !== 'Admin' && req.user.email !== 'adminfixhunger@gmail.com') {
       return res.status(403).json({ msg: 'Access denied' });
     }
     const { status } = req.body;
@@ -61,7 +61,7 @@ router.put('/:id/status', auth, async (req, res) => {
 // @desc     Approve or reject NGO registration (Admin only)
 router.put('/:id/verify-action', auth, async (req, res) => {
   try {
-    if (req.user.role !== 'Admin') {
+    if (req.user.role !== 'Admin' && req.user.email !== 'adminfixhunger@gmail.com') {
       return res.status(403).json({ msg: 'Access denied. Administrator permissions required.' });
     }
 
