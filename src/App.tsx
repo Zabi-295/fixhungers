@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import ProviderLayout from "./components/ProviderLayout";
 import ProviderDashboard from "./pages/provider/Dashboard";
@@ -59,7 +60,7 @@ const App = () => (
           <SupportProvider>
           <ChatProvider>
             <Routes>
-              <Route path="/" element={<Signup />} />
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
