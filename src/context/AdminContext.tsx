@@ -116,7 +116,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const verifyNGO = async (id: string, action: "approve" | "reject", reason?: string) => {
-    await apiFetch(`/users/${id}/verify-action`, {
+    const token = localStorage.getItem('token');
+    await apiFetch(`/users/${id}/verify-action?token=${token}`, {
       method: 'PUT',
       body: JSON.stringify({ action, rejectionReason: reason })
     });
