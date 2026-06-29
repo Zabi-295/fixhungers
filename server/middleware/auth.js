@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User.js');
 
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
   // Get token from header
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
@@ -14,10 +15,15 @@ module.exports = function (req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded.user;
     
-    // Temporary Admin Bypass for Debugging
-    if (req.user.id === '6a0208a67df4a81718019346') {
-      req.user.role = 'Admin';
+    // Fetch user from DB to ensure fresh status and role
+    const dbUser = await User.findById(req.user.id);
+    if (!dbUser) {
+      return res.status(401).json({ msg: 'User no longer exists' });
     }
+
+    // Attach fresh database role and details to the request user object
+    req.user.role = dbUser.role;
+    req.user.email = dbUser.email;
     
     next();
 
