@@ -12,6 +12,92 @@ const userRoutes = require('../server/routes/users');
 const chatRoutes = require('../server/routes/chats');
 
 const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  }
+});
+
+app.set('io', io);
+
+// Socket.io connection handlers
+io.on('connection', (socket) => {
+  console.log('Socket client connected:', socket.id);
+
+  // Join user to private room
+  socket.on('join', async (userId) => {
+    socket.join(userId);
+    console.log(`Socket client joined room: ${userId}`);
+
+    // Mark pending messages as delivered
+    try {
+      const Message = require('../server/models/Message');
+      await Message.updateMany({ receiver: userId, delivered: false }, { delivered: true });
+      socket.broadcast.to(userId).emit('messagesDelivered', { receiverId: userId });
+    } catch (err) {
+      console.error('Socket join delivered update error:', err.message);
+    }
+  });
+
+  // Real-time message transfer
+  socket.on('sendMessage', async (data) => {
+    const { sender, receiver, content, file_url, file_type, file_name } = data;
+    try {
+      const Message = require('../server/models/Message');
+      const User = require('../server/models/User');
+
+      const receiverRoom = io.sockets.adapter.rooms.get(receiver);
+      const isOnline = receiverRoom && receiverRoom.size > 0;
+      const delivered = isOnline ? true : false;
+
+      const newMessage = new Message({
+        sender,
+        receiver,
+        content,
+        file_url,
+        file_type,
+        file_name,
+        delivered,
+        read: false
+      });
+
+      await newMessage.save();
+
+      const senderUser = await User.findById(sender);
+
+      const formattedMessage = {
+        _id: newMessage._id,
+        senderId: sender,
+        senderName: senderUser?.name || 'User',
+        role: senderUser?.role || 'Provider',
+        message: content || '',
+        file_url,
+        file_type,
+        file_name,
+        read: false,
+        delivered,
+        createdAt: newMessage.createdAt
+      };
+
+      // Send to receiver
+      io.to(receiver).emit('receiveMessage', formattedMessage);
+      // Confirm to sender
+      socket.emit('messageSent', formattedMessage);
+
+    } catch (err) {
+      console.error('Socket sendMessage error:', err.message);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Socket client disconnected:', socket.id);
+  });
+});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -153,7 +239,7 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;

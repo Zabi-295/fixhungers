@@ -8,11 +8,12 @@ import { ThemeToggle } from "./ThemeToggle";
 import Logo from "./Logo";
 import { useAuth } from "@/context/AuthContext";
 
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, MessageCircle } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
   { label: "User Management", icon: Users, path: "/admin/users" },
+  { label: "Messages", icon: MessageCircle, path: "/admin/messages" },
   { label: "Support Requests", icon: MessageSquare, path: "/admin/support" },
   { label: "Donation Monitoring", icon: ClipboardList, path: "/admin/donations" },
   { label: "Analytics & Reports", icon: BarChart3, path: "/admin/analytics" },

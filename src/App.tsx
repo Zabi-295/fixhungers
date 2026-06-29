@@ -34,9 +34,11 @@ import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { SupportProvider } from "./context/SupportContext";
 import SupportRequests from "./pages/admin/SupportRequests";
+import AdminMessages from "./pages/admin/AdminMessages";
 import { ChatProvider } from "./context/ChatContext";
 import ProviderMessages from "./pages/provider/Messages";
 import NGOMessages from "./pages/ngo/Messages";
+import SupportChatWidget from "./components/SupportChatWidget";
 
 
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -84,8 +86,10 @@ const App = () => (
               <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
               <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
               <Route path="/admin/support" element={<AdminLayout><SupportRequests /></AdminLayout>} />
+              <Route path="/admin/messages" element={<AdminLayout><AdminMessages /></AdminLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <SupportChatWidget />
           </ChatProvider>
           </SupportProvider>
           </AdminProvider>

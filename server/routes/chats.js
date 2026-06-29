@@ -1,21 +1,79 @@
 const express = require('express');
 const router = express.Router();
-const Conversation = require('../models/Conversation.js');
+const Message = require('../models/Message.js');
 const User = require('../models/User.js');
 const auth = require('../middleware/auth.js');
 const verifiedNGO = require('../middleware/verifiedNGO.js');
+const mongoose = require('mongoose');
+
+// @route   GET api/chats/admin-user
+// @desc    Get the administrator user ID and details for support chat
+router.get('/admin-user', auth, async (req, res) => {
+  try {
+    const admin = await User.findOne({ role: 'Admin' }).select('_id name email role');
+    if (!admin) {
+      return res.status(404).json({ msg: 'No administrator found' });
+    }
+    res.json(admin);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // @route   GET api/chats
 // @desc    Get all conversations for logged-in user
 router.get('/', [auth, verifiedNGO], async (req, res) => {
   try {
-    const chats = await Conversation.find({
-      participants: req.user.id
-    })
-    .populate('participants', 'name email role profile isActive')
-    .sort({ updatedAt: -1 });
-    
-    res.json(chats);
+    const userId = req.user.id;
+    // Find all messages where current user is sender or receiver
+    const messages = await Message.find({
+      $or: [
+        { sender: userId },
+        { receiver: userId }
+      ]
+    }).sort({ createdAt: -1 });
+
+    // Group messages by the other user ID
+    const conversationMap = new Map();
+    for (const msg of messages) {
+      const otherUserId = msg.sender.toString() === userId ? msg.receiver.toString() : msg.sender.toString();
+      if (!conversationMap.has(otherUserId)) {
+        conversationMap.set(otherUserId, msg);
+      }
+    }
+
+    const conversations = [];
+    for (const [otherUserId, lastMsg] of conversationMap.entries()) {
+      const otherUser = await User.findById(otherUserId).select('name email role profile isActive');
+      if (!otherUser) continue;
+
+      // Filter out admin support chat for normal users to keep inbox clean, if requested
+      if (req.user.role !== 'Admin' && otherUser.role === 'Admin') {
+        // Skip adding admin to their normal chats list, support chat is handled separately
+        continue;
+      }
+
+      // Count unread messages sent by the other user to the current user
+      const unreadCount = await Message.countDocuments({
+        sender: otherUserId,
+        receiver: userId,
+        read: false
+      });
+
+      conversations.push({
+        _id: otherUserId, // Use other user ID as the conversation ID for easy routing
+        participants: [
+          { _id: userId },
+          otherUser
+        ],
+        lastMessage: lastMsg.deleted_for_everyone ? 'This message was deleted' : lastMsg.content || '[Attachment]',
+        unreadCount,
+        updatedAt: lastMsg.createdAt
+      });
+    }
+
+    res.json(conversations);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -23,29 +81,49 @@ router.get('/', [auth, verifiedNGO], async (req, res) => {
 });
 
 // @route   GET api/chats/:userId
-// @desc    Get or create a conversation between current user and another user
+// @desc    Get all messages between current user and another user
 router.get('/:userId', [auth, verifiedNGO], async (req, res) => {
   try {
-    const otherUser = await User.findById(req.params.userId).select('name email role profile isActive');
+    const userId = req.user.id;
+    const otherUserId = req.params.userId;
+
+    const otherUser = await User.findById(otherUserId).select('name email role profile isActive');
     if (!otherUser) {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    let chat = await Conversation.findOne({
-      participants: { $all: [req.user.id, req.params.userId] }
-    }).populate('participants', 'name email role profile isActive');
+    // Find all messages between them, excluding ones deleted by current user
+    const messages = await Message.find({
+      $or: [
+        { sender: userId, receiver: otherUserId },
+        { sender: otherUserId, receiver: userId }
+      ],
+      deleted_by_users: { $ne: userId }
+    }).sort({ createdAt: 1 });
 
-    if (!chat) {
-      chat = new Conversation({
-        participants: [req.user.id, req.params.userId],
-        messages: []
-      });
-      await chat.save();
-      // Populate participants after saving
-      chat = await Conversation.findById(chat._id).populate('participants', 'name email role profile isActive');
-    }
+    const formattedMessages = messages.map(msg => ({
+      _id: msg._id,
+      senderId: msg.sender,
+      senderName: msg.sender.toString() === userId ? 'You' : otherUser.name,
+      role: msg.sender.toString() === userId ? req.user.role : otherUser.role,
+      message: msg.deleted_for_everyone ? 'This message was deleted' : msg.content || '',
+      file_url: msg.deleted_for_everyone ? undefined : msg.file_url,
+      file_type: msg.deleted_for_everyone ? undefined : msg.file_type,
+      file_name: msg.deleted_for_everyone ? undefined : msg.file_name,
+      read: msg.read,
+      delivered: msg.delivered,
+      deleted_for_everyone: msg.deleted_for_everyone,
+      createdAt: msg.createdAt
+    }));
 
-    res.json(chat);
+    res.json({
+      _id: otherUserId,
+      participants: [
+        { _id: userId, name: 'You', role: req.user.role },
+        otherUser
+      ],
+      messages: formattedMessages
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -56,41 +134,137 @@ router.get('/:userId', [auth, verifiedNGO], async (req, res) => {
 // @desc    Send a message to a user
 router.post('/:userId', [auth, verifiedNGO], async (req, res) => {
   try {
-    const { message } = req.body;
-    if (!message || !message.trim()) {
-      return res.status(400).json({ msg: 'Message is required' });
+    const userId = req.user.id;
+    const otherUserId = req.params.userId;
+    const { message, file_url, file_type, file_name } = req.body;
+
+    if (!message && !file_url) {
+      return res.status(400).json({ msg: 'Message content or file is required' });
     }
 
-    const sender = await User.findById(req.user.id);
-    if (!sender) {
-      return res.status(404).json({ msg: 'Sender not found' });
-    }
-
-    let chat = await Conversation.findOne({
-      participants: { $all: [req.user.id, req.params.userId] }
+    const newMessage = new Message({
+      sender: userId,
+      receiver: otherUserId,
+      content: message,
+      file_url,
+      file_type,
+      file_name,
+      delivered: false,
+      read: false
     });
 
-    if (!chat) {
-      chat = new Conversation({
-        participants: [req.user.id, req.params.userId],
-        messages: []
-      });
+    await newMessage.save();
+
+    // Trigger realtime socket if socket.io is active
+    const io = req.app.get('io');
+    if (io) {
+      const formattedMessage = {
+        _id: newMessage._id,
+        senderId: userId,
+        senderName: req.user.email?.split('@')[0] || 'User',
+        role: req.user.role,
+        message: message || '',
+        file_url,
+        file_type,
+        file_name,
+        read: false,
+        delivered: false,
+        createdAt: newMessage.createdAt
+      };
+      io.to(otherUserId).emit('receiveMessage', formattedMessage);
     }
 
-    chat.messages.push({
-      senderId: req.user.id,
-      senderName: sender.name,
-      role: sender.role,
-      message: message.trim()
-    });
+    res.json(newMessage);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
-    chat.updatedAt = Date.now();
-    await chat.save();
+// @route   PUT api/chats/:userId/read
+// @desc    Mark all messages from userId as read
+router.put('/:userId/read', [auth, verifiedNGO], async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const otherUserId = req.params.userId;
 
-    const populatedChat = await Conversation.findById(chat._id)
-      .populate('participants', 'name email role profile isActive');
+    await Message.updateMany(
+      { sender: otherUserId, receiver: userId, read: false },
+      { $set: { read: true } }
+    );
 
-    res.json(populatedChat);
+    // Notify other user via sockets
+    const io = req.app.get('io');
+    if (io) {
+      io.to(otherUserId).emit('messagesRead', { readerId: userId });
+    }
+
+    res.json({ msg: 'Messages marked as read' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/chats/upload
+// @desc    Mock upload endpoint to comply with file transfer requirements
+router.post('/upload', [auth, verifiedNGO], async (req, res) => {
+  const { file, fileName, fileType } = req.body;
+  res.json({
+    file_url: file,
+    file_name: fileName,
+    file_type: fileType
+  });
+});
+
+// @route   PUT api/chats/messages/:messageId/delete-for-me
+// @desc    Delete message for me
+router.put('/messages/:messageId/delete-for-me', [auth, verifiedNGO], async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const message = await Message.findById(req.params.messageId);
+
+    if (!message) {
+      return res.status(404).json({ msg: 'Message not found' });
+    }
+
+    if (!message.deleted_by_users.includes(userId)) {
+      message.deleted_by_users.push(userId);
+      await message.save();
+    }
+
+    res.json({ msg: 'Message deleted for you' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/chats/messages/:messageId/delete-for-everyone
+// @desc    Delete message for everyone (Unsend)
+router.put('/messages/:messageId/delete-for-everyone', [auth, verifiedNGO], async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const message = await Message.findById(req.params.messageId);
+
+    if (!message) {
+      return res.status(404).json({ msg: 'Message not found' });
+    }
+
+    if (message.sender.toString() !== userId) {
+      return res.status(403).json({ msg: 'Cannot delete messages sent by others' });
+    }
+
+    message.deleted_for_everyone = true;
+    await message.save();
+
+    // Notify other user via sockets
+    const io = req.app.get('io');
+    if (io) {
+      io.to(message.receiver.toString()).emit('messageDeletedEveryone', { messageId: message._id });
+    }
+
+    res.json({ msg: 'Message deleted for everyone' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
