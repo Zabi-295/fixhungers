@@ -163,11 +163,15 @@ const Messages = () => {
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-primary" /> Direct Chats
             </h2>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
               {isConnected ? (
-                <><Wifi className="w-3 h-3 text-emerald-500" /> Connected</>
+                <span className="flex items-center gap-1 text-emerald-500 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Sync
+                </span>
               ) : (
-                <><WifiOff className="w-3 h-3 text-amber-500" /> Reconnecting...</>
+                <span className="flex items-center gap-1 text-blue-500 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Cloud Sync
+                </span>
               )}
             </p>
           </div>

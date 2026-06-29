@@ -33,6 +33,8 @@ export const useSocket = () => {
     const socket = io(getSocketUrl(), {
       transports: ["websocket", "polling"],
       autoConnect: true,
+      reconnectionAttempts: 3, // Try 3 times to connect, then fallback to REST polling
+      timeout: 5000,
     });
 
     socketRef.current = socket;

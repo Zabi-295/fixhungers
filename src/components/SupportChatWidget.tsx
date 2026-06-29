@@ -216,11 +216,15 @@ const SupportChatWidget = () => {
               <h3 className="font-bold flex items-center gap-2">
                 <Shield className="w-4 h-4" /> Admin Support
               </h3>
-              <p className="text-xs opacity-80 flex items-center gap-1">
+              <p className="text-xs opacity-90 flex items-center gap-1 mt-0.5">
                 {isConnected ? (
-                  <><Wifi className="w-3 h-3" /> Live Chat</>
+                  <span className="flex items-center gap-1 font-semibold text-emerald-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" /> Live Chat
+                  </span>
                 ) : (
-                  <><WifiOff className="w-3 h-3" /> Connecting...</>
+                  <span className="flex items-center gap-1 font-semibold text-blue-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-200" /> Cloud Sync
+                  </span>
                 )}
               </p>
             </div>
