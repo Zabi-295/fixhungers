@@ -71,6 +71,53 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(25px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-12px) rotate(0.5deg);
+          }
+        }
+        @keyframes pulseBlob {
+          0%, 100% {
+            transform: scale(1) translate(0px, 0px);
+            opacity: 0.12;
+          }
+          33% {
+            transform: scale(1.1) translate(20px, -30px);
+            opacity: 0.2;
+          }
+          66% {
+            transform: scale(0.95) translate(-15px, 15px);
+            opacity: 0.08;
+          }
+        }
+        .animate-fade-in-up {
+          opacity: 0;
+          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-float {
+          animation: float 5s ease-in-out infinite;
+        }
+        .animate-blob-1 {
+          animation: pulseBlob 9s ease-in-out infinite;
+        }
+        .animate-blob-2 {
+          animation: pulseBlob 13s ease-in-out infinite alternate;
+        }
+      `}</style>
       
       {/* 1. Header Navigation */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/75 border-b border-border transition-all">
@@ -104,24 +151,28 @@ const Landing = () => {
       </header>
 
       {/* 2. Hero Section */}
-      <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden bg-gradient-to-b from-primary/5 via-transparent to-transparent">
+      <section className="relative pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden bg-gradient-to-b from-primary/5 via-transparent to-transparent">
+        {/* Animated Background Blur Blobs */}
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] bg-[#68A14E]/12 rounded-full blur-[100px] pointer-events-none animate-blob-1" />
+        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] bg-primary/10 rounded-full blur-[100px] pointer-events-none animate-blob-2" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary animate-pulse">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary animate-fade-in-up">
             <Sparkles className="w-3.5 h-3.5" /> Direct Community Food Redistribution
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground max-w-4xl mx-auto leading-tight sm:leading-none">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground max-w-4xl mx-auto leading-tight sm:leading-none animate-fade-in-up [animation-delay:150ms]">
             Minimize Food Waste,<br />
             <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
               Feed Families in Need
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:300ms]">
             Connecting local restaurants and food providers with verified NGOs to rescue surplus meals and deliver them safely to underprivileged families.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-fade-in-up [animation-delay:450ms]">
             <Link 
               to="/signup" 
               className="w-full sm:w-auto flex items-center justify-center gap-2 text-base font-bold px-8 py-4 rounded-2xl bg-primary text-primary-foreground hover:opacity-95 transition shadow-lg hover:shadow-primary/20 group"
@@ -134,6 +185,20 @@ const Landing = () => {
             >
               <HandHeart className="w-5 h-5 text-primary" /> Register as NGO
             </Link>
+          </div>
+
+          {/* Floating activity card */}
+          <div className="pt-8 flex justify-center animate-fade-in-up [animation-delay:600ms]">
+            <div className="animate-float bg-card/65 backdrop-blur-md border border-border/80 rounded-3xl p-5 shadow-xl max-w-sm flex items-center gap-4 text-left">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Live Rescue Activity</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">Al-Khidmat claimed 45 meals from Savour Foods</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
