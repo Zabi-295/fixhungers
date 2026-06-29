@@ -78,6 +78,14 @@ router.post('/login', async (req, res) => {
     let user;
     if (firebaseUid) {
       user = await User.findOne({ firebaseUid });
+      if (!user) {
+        // Fallback: Check if user already exists by email, and link their Firebase UID
+        user = await User.findOne({ email });
+        if (user) {
+          user.firebaseUid = firebaseUid;
+          await user.save();
+        }
+      }
     } else {
       user = await User.findOne({ email });
     }
@@ -92,7 +100,15 @@ router.post('/login', async (req, res) => {
         const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
         
         const isEmailAdmin = email.toLowerCase().includes('admin') || email === 'adminfixhunger@gmail.com';
-        const finalRole = isEmailAdmin ? 'Admin' : (req.body.role || 'NGO');
+        
+        let finalRole = 'NGO';
+        if (req.body.role) {
+          const r = req.body.role.toLowerCase();
+          if (r === 'provider') finalRole = 'Provider';
+          else if (r === 'ngo') finalRole = 'NGO';
+          else if (r === 'admin') finalRole = 'Admin';
+        }
+        if (isEmailAdmin) finalRole = 'Admin';
 
         user = new User({
           email,
