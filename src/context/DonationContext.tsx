@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useRef } from "react";
 import { useAuth, type UserProfile as AuthUserProfile } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationContext";
 import apiFetch from "@/lib/api";
@@ -225,9 +225,16 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchDonationsRef = useRef(fetchDonations);
   useEffect(() => {
-    fetchDonations();
-    const interval = setInterval(fetchDonations, 10000); // Poll every 10s
+    fetchDonationsRef.current = fetchDonations;
+  });
+
+  useEffect(() => {
+    fetchDonationsRef.current();
+    const interval = setInterval(() => {
+      fetchDonationsRef.current();
+    }, 3000); // 3 seconds polling for near real-time updates
     return () => clearInterval(interval);
   }, [currentUser]);
 

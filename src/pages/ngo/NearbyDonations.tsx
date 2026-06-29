@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDonations } from "@/context/DonationContext";
 import { X as XIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import ActivityMap from "@/components/ActivityMap";
 import { calculateDistanceKm } from "@/lib/donation-utils";
 
-const MAX_RADIUS_KM = 50;
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ const NearbyDonations = () => {
   const { donations, acceptDonation, ngoProfile } = useDonations();
   const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
+  const [radiusFilter, setRadiusFilter] = useState<number | "All">("All"); // Default to "All" to show all donations in testing
 
   const available = donations.filter((d) => {
     if (d.status !== "Pending") return false;
@@ -21,9 +22,10 @@ const NearbyDonations = () => {
     if (isExpired) return false;
     const hasNgoLoc = typeof ngoProfile.lat === "number" && typeof ngoProfile.lng === "number";
     const hasProvLoc = typeof d.providerLat === "number" && typeof d.providerLng === "number";
+    if (radiusFilter === "All") return true;
     if (!hasNgoLoc || !hasProvLoc) return true;
     const distanceKm = calculateDistanceKm(ngoProfile.lat, ngoProfile.lng, d.providerLat, d.providerLng);
-    return distanceKm <= MAX_RADIUS_KM;
+    return distanceKm <= radiusFilter;
   });
 
   const mapMarkers = [
@@ -67,9 +69,27 @@ const NearbyDonations = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Nearby Donations</h1>
-        <p className="text-sm text-muted-foreground">Browse all available food donations near you</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Nearby Donations</h1>
+          <p className="text-sm text-muted-foreground">Browse all available food donations near you</p>
+        </div>
+        <div>
+          <select
+            value={radiusFilter}
+            onChange={(e) => {
+              const val = e.target.value;
+              setRadiusFilter(val === "All" ? "All" : Number(val));
+            }}
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-card border border-border text-foreground focus:outline-none cursor-pointer hover:bg-muted transition shadow-sm w-full sm:w-auto"
+          >
+            <option value="All">All Regions (Show All)</option>
+            <option value="5">Within 5 km</option>
+            <option value="15">Within 15 km</option>
+            <option value="50">Within 50 km</option>
+            <option value="100">Within 100 km</option>
+          </select>
+        </div>
       </div>
 
       {/* Live Map */}

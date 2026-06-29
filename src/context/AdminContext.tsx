@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import apiFetch from "@/lib/api";
 import { toIsoDateString } from "@/lib/donation-utils";
 
@@ -66,11 +66,18 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchUsersRef = useRef(fetchUsers);
+  useEffect(() => {
+    fetchUsersRef.current = fetchUsers;
+  });
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetchUsers();
-      const interval = setInterval(fetchUsers, 10000); // 10s polling
+      fetchUsersRef.current();
+      const interval = setInterval(() => {
+        fetchUsersRef.current();
+      }, 3000); // 3 seconds polling
       return () => clearInterval(interval);
     }
   }, []);

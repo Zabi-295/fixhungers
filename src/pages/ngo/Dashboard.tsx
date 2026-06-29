@@ -20,6 +20,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
+  const [radiusFilter, setRadiusFilter] = useState<number | "All">("All"); // Default to "All" to show all donations in testing
   const [showNotifications, setShowNotifications] = useState(false);
 
   const isMyPickup = (donation: typeof donations[0]) =>
@@ -32,9 +33,9 @@ const Dashboard = () => {
 
     const hasNgoLoc = typeof ngoProfile.lat === "number" && typeof ngoProfile.lng === "number";
     const hasProvLoc = typeof d.providerLat === "number" && typeof d.providerLng === "number";
-    if (hasNgoLoc && hasProvLoc) {
+    if (radiusFilter !== "All" && hasNgoLoc && hasProvLoc) {
       const distanceKm = calculateDistanceKm(ngoProfile.lat, ngoProfile.lng, d.providerLat, d.providerLng);
-      if (distanceKm > MAX_RADIUS_KM) return false;
+      if (distanceKm > radiusFilter) return false;
     }
     return (
       d.status === "Pending" ||
@@ -176,7 +177,23 @@ const Dashboard = () => {
             Real-time rescue opportunities in {ngoProfile.location}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 items-center flex-wrap">
+          {/* Radius Filter Select */}
+          <select
+            value={radiusFilter}
+            onChange={(e) => {
+              const val = e.target.value;
+              setRadiusFilter(val === "All" ? "All" : Number(val));
+            }}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-card border border-border text-foreground focus:outline-none cursor-pointer hover:bg-muted transition"
+          >
+            <option value="All">All Regions</option>
+            <option value="5">Within 5 km</option>
+            <option value="15">Within 15 km</option>
+            <option value="50">Within 50 km</option>
+            <option value="100">Within 100 km</option>
+          </select>
+
           {categories.map((cat) => (
             <button
               key={cat}

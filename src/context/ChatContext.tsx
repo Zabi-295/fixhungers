@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import apiFetch from "@/lib/api";
 import { useAuth } from "./AuthContext";
 
@@ -81,11 +81,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchConversationsRef = useRef(fetchConversations);
+  useEffect(() => {
+    fetchConversationsRef.current = fetchConversations;
+  });
+
   useEffect(() => {
     if (currentUser) {
-      fetchConversations();
+      fetchConversationsRef.current();
       fetchContacts();
-      const interval = setInterval(fetchConversations, 5000); // Poll every 5 seconds for new messages
+      const interval = setInterval(() => {
+        fetchConversationsRef.current();
+      }, 2000); // 2 seconds polling for real-time chat feel
       return () => clearInterval(interval);
     } else {
       setConversations([]);
