@@ -13,8 +13,7 @@ import { MessageSquare, MessageCircle } from "lucide-react";
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
   { label: "User Management", icon: Users, path: "/admin/users" },
-  { label: "Messages", icon: MessageCircle, path: "/admin/messages" },
-  { label: "Support Requests", icon: MessageSquare, path: "/admin/support" },
+  { label: "Support Messages", icon: MessageSquare, path: "/admin/messages" },
   { label: "Donation Monitoring", icon: ClipboardList, path: "/admin/donations" },
   { label: "Analytics & Reports", icon: BarChart3, path: "/admin/analytics" },
 ];

@@ -208,7 +208,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       fetchConversations();
       fetchContacts();
       // Lightweight polling as fallback in case socket misses an event (e.g. reconnect)
-      const interval = setInterval(fetchConversations, 8000);
+      const interval = setInterval(fetchConversations, 15000); // Optimized to 15s
       return () => clearInterval(interval);
     } else {
       setConversations([]);
@@ -236,8 +236,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         }
       };
 
-      // Poll every 3 seconds for near real-time updates when offline
-      const pollInterval = setInterval(pollActiveChat, 3000);
+      // Poll every 6 seconds for near real-time updates when offline
+      const pollInterval = setInterval(pollActiveChat, 6000);
       return () => clearInterval(pollInterval);
     }
   }, [currentUser, isConnected, activeContact]);

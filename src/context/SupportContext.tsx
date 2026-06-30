@@ -49,7 +49,7 @@ export const SupportProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (currentUser) {
       fetchTickets();
-      const interval = setInterval(fetchTickets, 10000); // Polling for new messages
+      const interval = setInterval(fetchTickets, 30000); // Optimized to 30 seconds
       return () => clearInterval(interval);
     }
   }, [currentUser]);

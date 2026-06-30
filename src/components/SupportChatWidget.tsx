@@ -135,7 +135,7 @@ const SupportChatWidget = () => {
   // Polling fallback
   useEffect(() => {
     if (!adminUser) return;
-    const interval = setInterval(loadHistory, 8000);
+    const interval = setInterval(loadHistory, 15000); // Optimized to 15 seconds
     return () => clearInterval(interval);
   }, [adminUser, loadHistory]);
 

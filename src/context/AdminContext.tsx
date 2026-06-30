@@ -77,7 +77,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       fetchUsersRef.current();
       const interval = setInterval(() => {
         fetchUsersRef.current();
-      }, 3000); // 3 seconds polling
+      }, 20000); // 20 seconds polling to prevent request throttling
       return () => clearInterval(interval);
     }
   }, []);

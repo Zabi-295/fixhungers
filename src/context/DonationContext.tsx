@@ -234,7 +234,7 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
     fetchDonationsRef.current();
     const interval = setInterval(() => {
       fetchDonationsRef.current();
-    }, 3000); // 3 seconds polling for near real-time updates
+    }, 15000); // 15 seconds polling to prevent request throttling
     return () => clearInterval(interval);
   }, [currentUser]);
 
