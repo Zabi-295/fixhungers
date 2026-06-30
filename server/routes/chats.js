@@ -24,6 +24,13 @@ router.get('/admin-user', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/chats/test-cloudinary
+// @desc    Test if Cloudinary is configured and return status
+router.get('/test-cloudinary', async (req, res) => {
+  const { isConfigured } = require('../utils/cloudinary');
+  res.json({ cloudinaryConfigured: isConfigured });
+});
+
 // @route   GET api/chats
 // @desc    Get all conversations for logged-in user
 router.get('/', [auth, verifiedNGO], async (req, res) => {
