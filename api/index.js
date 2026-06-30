@@ -46,10 +46,19 @@ io.on('connection', (socket) => {
 
   // Real-time message transfer
   socket.on('sendMessage', async (data) => {
-    const { sender, receiver, content, file_url, file_type, file_name } = data;
+    let { sender, receiver, content, file_url, file_type, file_name } = data;
     try {
       const Message = require('../server/models/Message');
       const User = require('../server/models/User');
+
+      // Upload to Cloudinary if base64 Data URL and Cloudinary is configured
+      if (file_url && file_url.startsWith('data:')) {
+        const { uploadToBase64 } = require('../server/utils/cloudinary');
+        const cloudinaryUrl = await uploadToBase64(file_url);
+        if (cloudinaryUrl) {
+          file_url = cloudinaryUrl;
+        }
+      }
 
       const receiverRoom = io.sockets.adapter.rooms.get(receiver);
       const isOnline = receiverRoom && receiverRoom.size > 0;

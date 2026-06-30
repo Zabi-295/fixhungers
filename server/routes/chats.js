@@ -164,10 +164,19 @@ router.post('/:userId', [auth, verifiedNGO], async (req, res) => {
   try {
     const userId = req.user.id;
     const otherUserId = req.params.userId;
-    const { message, file_url, file_type, file_name } = req.body;
+    let { message, file_url, file_type, file_name } = req.body;
 
     if (!message && !file_url) {
       return res.status(400).json({ msg: 'Message content or file is required' });
+    }
+
+    // Upload to Cloudinary if base64 Data URL and Cloudinary is configured
+    if (file_url && file_url.startsWith('data:')) {
+      const { uploadToBase64 } = require('../utils/cloudinary');
+      const cloudinaryUrl = await uploadToBase64(file_url);
+      if (cloudinaryUrl) {
+        file_url = cloudinaryUrl;
+      }
     }
 
     const newMessage = new Message({
