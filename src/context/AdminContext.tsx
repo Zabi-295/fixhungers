@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import apiFetch from "@/lib/api";
 import { toIsoDateString } from "@/lib/donation-utils";
+import { useAuth } from "./AuthContext";
 
 export interface RegisteredUser {
   id: string;
@@ -37,6 +38,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
+  const { currentUser } = useAuth();
   const [users, setUsers] = useState<RegisteredUser[]>([]);
 
   const fetchUsers = async () => {
