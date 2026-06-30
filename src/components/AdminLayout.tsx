@@ -26,6 +26,7 @@ const accountItems = [
 const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <div className="flex flex-col h-full justify-between">
@@ -89,7 +90,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 
       <div className="px-3 pb-5">
         <button
-          onClick={() => { onNavigate?.(); navigate("/login"); }}
+          onClick={async () => { onNavigate?.(); await logout(); navigate("/login"); }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 w-full transition"
         >
           <LogOut className="w-4 h-4" />

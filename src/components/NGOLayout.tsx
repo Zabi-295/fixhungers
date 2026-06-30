@@ -24,6 +24,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { ngoProfile } = useDonations();
+  const { logout } = useAuth();
 
   return (
     <div className="flex flex-col h-full">
@@ -76,7 +77,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
           Profile
         </NavLink>
         <button
-          onClick={() => { onNavigate?.(); navigate("/login"); }}
+          onClick={async () => { onNavigate?.(); await logout(); navigate("/login"); }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive hover:bg-destructive/10 w-full font-medium"
         >
           <LogOut className="w-4 h-4" />
