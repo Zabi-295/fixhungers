@@ -218,6 +218,30 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentUser, fetchConversations]);
 
+  // Poll active chat messages when socket is disconnected (e.g. on Vercel)
+  useEffect(() => {
+    const currentUserId = currentUser?.id || currentUser?._id || currentUser?.uid;
+    if (currentUserId && !isConnected && activeContact) {
+      const targetContactId = activeContact._id || activeContact.id;
+      const pollActiveChat = async () => {
+        try {
+          const data = await apiFetch(`/chats/${targetContactId}`);
+          // Ensure we don't overwrite if the active contact changed during request
+          const latestContact = activeContactRef.current;
+          if (latestContact && (latestContact._id === targetContactId || latestContact.id === targetContactId)) {
+            setActiveChat(data);
+          }
+        } catch (err) {
+          console.error("Failed to poll active chat:", err);
+        }
+      };
+
+      // Poll every 3 seconds for near real-time updates when offline
+      const pollInterval = setInterval(pollActiveChat, 3000);
+      return () => clearInterval(pollInterval);
+    }
+  }, [currentUser, isConnected, activeContact]);
+
   // --- Actions ---
 
   const selectChatWithUser = useCallback(async (userId: string) => {

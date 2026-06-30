@@ -19,7 +19,9 @@ export const useSocket = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!currentUser?.id) {
+    const userId = currentUser?.id || currentUser?._id || currentUser?.uid;
+
+    if (!userId) {
       // Disconnect if user logs out
       if (socketRef.current) {
         socketRef.current.disconnect();
@@ -42,8 +44,8 @@ export const useSocket = () => {
     socket.on("connect", () => {
       console.log("🔌 Socket connected:", socket.id);
       setIsConnected(true);
-      // Join private room with user's MongoDB _id
-      socket.emit("join", currentUser.id);
+      // Join private room with user's MongoDB ID
+      socket.emit("join", userId);
     });
 
     socket.on("disconnect", () => {

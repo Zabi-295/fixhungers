@@ -26,6 +26,19 @@ router.get('/admin-user', auth, async (req, res) => {
 router.get('/', [auth, verifiedNGO], async (req, res) => {
   try {
     const userId = req.user.id;
+
+    // Auto-mark any incoming pending messages as delivered
+    await Message.updateMany(
+      { receiver: userId, delivered: false },
+      { $set: { delivered: true } }
+    );
+
+    // Notify other users via sockets if active
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('messagesDelivered', { receiverId: userId });
+    }
+
     // Find all messages where current user is sender or receiver
     const messages = await Message.find({
       $or: [
@@ -90,6 +103,18 @@ router.get('/:userId', [auth, verifiedNGO], async (req, res) => {
     const otherUser = await User.findById(otherUserId).select('name email role profile isActive');
     if (!otherUser) {
       return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Mark messages sent by the other user to current user as delivered
+    await Message.updateMany(
+      { sender: otherUserId, receiver: userId, delivered: false },
+      { $set: { delivered: true } }
+    );
+
+    // Notify other user via sockets if online
+    const io = req.app.get('io');
+    if (io) {
+      io.to(otherUserId).emit('messagesDelivered', { receiverId: userId });
     }
 
     // Find all messages between them, excluding ones deleted by current user
@@ -190,7 +215,7 @@ router.put('/:userId/read', [auth, verifiedNGO], async (req, res) => {
 
     await Message.updateMany(
       { sender: otherUserId, receiver: userId, read: false },
-      { $set: { read: true } }
+      { $set: { read: true, delivered: true } }
     );
 
     // Notify other user via sockets

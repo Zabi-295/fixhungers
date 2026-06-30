@@ -57,7 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         try {
           const res = await apiFetch('/auth/me');
-          setCurrentUser({ ...res, uid: res.id, emailVerified: true });
+          const userId = res.id || res._id;
+          setCurrentUser({ ...res, id: userId, uid: userId, emailVerified: true });
           setLoading(false);
           return;
         } catch (err) {
@@ -167,7 +168,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUser = async () => {
     try {
       const res = await apiFetch('/auth/me'); 
-      setCurrentUser({ ...res, uid: res.id, emailVerified: true });
+      const userId = res.id || res._id;
+      setCurrentUser({ ...res, id: userId, uid: userId, emailVerified: true });
     } catch (err) {
       console.error("Refresh user error:", err);
     }
