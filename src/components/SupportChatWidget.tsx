@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Shield, User, Check, CheckCheck, Wifi, WifiOff,
 import { useAuth } from "@/context/AuthContext";
 import useSocket from "@/hooks/useSocket";
 import apiFetch from "@/lib/api";
+import { useLocation } from "react-router-dom";
 
 interface SupportMessage {
   _id?: string;
@@ -27,6 +28,7 @@ interface AdminUser {
 }
 
 const SupportChatWidget = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [messages, setMessages] = useState<SupportMessage[]>([]);
@@ -181,7 +183,8 @@ const SupportChatWidget = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (!currentUser || currentUser.role === "Admin") return null;
+  const isPortalPage = location.pathname.startsWith("/provider") || location.pathname.startsWith("/ngo");
+  if (!currentUser || currentUser.role === "Admin" || !isPortalPage) return null;
 
   return (
     <>

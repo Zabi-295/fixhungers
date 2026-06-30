@@ -10,7 +10,10 @@ const mongoose = require('mongoose');
 // @desc    Get the administrator user ID and details for support chat
 router.get('/admin-user', auth, async (req, res) => {
   try {
-    const admin = await User.findOne({ role: 'Admin' }).select('_id name email role');
+    let admin = await User.findOne({ email: 'adminfixhunger@gmail.com' }).select('_id name email role');
+    if (!admin) {
+      admin = await User.findOne({ role: 'Admin' }).select('_id name email role');
+    }
     if (!admin) {
       return res.status(404).json({ msg: 'No administrator found' });
     }
