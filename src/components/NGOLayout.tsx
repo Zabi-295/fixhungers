@@ -24,7 +24,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { ngoProfile } = useDonations();
-  const { logout } = useAuth();
+  const { currentUser, logout } = useAuth();
 
   return (
     <div className="flex flex-col h-full">
@@ -88,10 +88,10 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       <div className="px-3 pb-4 mt-1">
         <div className="flex items-center gap-2.5 px-3 py-2.5">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-            {ngoProfile.fullName.charAt(0)}
+            {(ngoProfile?.fullName || currentUser?.name || "N").charAt(0)}
           </div>
           <div>
-            <div className="text-xs font-semibold text-foreground">{ngoProfile.fullName}</div>
+            <div className="text-xs font-semibold text-foreground">{ngoProfile?.fullName || currentUser?.name || "NGO Volunteer"}</div>
             <div className="text-[10px] text-primary">Gold Rescuer</div>
           </div>
         </div>
