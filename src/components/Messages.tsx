@@ -219,7 +219,8 @@ const Messages = () => {
               if (!otherUser) return null;
               const isSelected = activeContact && (activeContact._id === otherUser._id || activeContact.id === otherUser._id);
               const lastMsg = chat.lastMessage || (chat.messages?.length ? chat.messages[chat.messages.length - 1]?.message : "No messages yet");
-              const time = chat.updatedAt ? new Date(chat.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+              const chatDate = chat.updatedAt ? new Date(chat.updatedAt) : null;
+              const time = chatDate && !isNaN(chatDate.getTime()) ? chatDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
               return (
                 <div

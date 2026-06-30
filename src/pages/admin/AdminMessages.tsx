@@ -283,7 +283,8 @@ const AdminMessages = () => {
                 if (!otherUser) return null;
                 const isSelected = selectedUser?._id === otherUser._id;
                 const lastMsg = conv.lastMessage || "No messages yet";
-                const time = conv.updatedAt ? new Date(conv.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+                const convDate = conv.updatedAt ? new Date(conv.updatedAt) : null;
+                const time = convDate && !isNaN(convDate.getTime()) ? convDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
                 return (
                   <div
