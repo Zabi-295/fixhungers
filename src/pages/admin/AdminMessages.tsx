@@ -218,10 +218,10 @@ const AdminMessages = () => {
     return conv.participants.find((p) => p._id !== currentUser?.id);
   };
 
-  const filteredConversations = conversations.filter((conv) => {
+  const filteredConversations = (conversations || []).filter((conv) => {
     if (!searchQuery) return true;
     const other = getOtherUser(conv);
-    return other?.name.toLowerCase().includes(searchQuery.toLowerCase()) || other?.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    return (other?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (other?.email || "").toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (

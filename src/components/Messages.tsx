@@ -140,17 +140,17 @@ const Messages = () => {
   };
 
   // Filter conversations
-  const filteredConversations = conversations.filter((chat) => {
+  const filteredConversations = (conversations || []).filter((chat) => {
     if (!searchConversation) return true;
     const other = getOtherParticipant(chat);
-    return other?.name.toLowerCase().includes(searchConversation.toLowerCase());
+    return (other?.name || "").toLowerCase().includes(searchConversation.toLowerCase());
   });
 
   // Filter contacts
-  const filteredContacts = contacts.filter(
+  const filteredContacts = (contacts || []).filter(
     (contact) =>
-      contact.name.toLowerCase().includes(searchContact.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchContact.toLowerCase())
+      (contact?.name || "").toLowerCase().includes(searchContact.toLowerCase()) ||
+      (contact?.email || "").toLowerCase().includes(searchContact.toLowerCase())
   );
 
   return (
