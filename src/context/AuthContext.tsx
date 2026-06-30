@@ -64,6 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } catch (err) {
           console.error("Token restore failed, falling back to Firebase:", err);
           localStorage.removeItem('token');
+          setCurrentUser(null);
+          setLoading(false);
         }
       }
 

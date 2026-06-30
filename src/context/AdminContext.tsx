@@ -73,14 +73,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && currentUser?.role === 'Admin') {
       fetchUsersRef.current();
       const interval = setInterval(() => {
         fetchUsersRef.current();
       }, 20000); // 20 seconds polling to prevent request throttling
       return () => clearInterval(interval);
     }
-  }, []);
+  }, [currentUser?.role]);
 
   const addUser = async (user: Omit<RegisteredUser, "id" | "registeredAt" | "status"> & { password?: string }) => {
     await apiFetch('/auth/signup', {
