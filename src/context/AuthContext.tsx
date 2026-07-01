@@ -48,6 +48,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const isLoggingInRef = useRef(false);
 
   useEffect(() => {
     let unsubFn: (() => void) | undefined;
@@ -71,6 +72,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Fallback: Listen for Firebase auth changes
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (isLoggingInRef.current) return;
+        if (localStorage.getItem('token')) {
+          setLoading(false);
+          return;
+        }
         if (firebaseUser) {
           if (firebaseUser.emailVerified) {
             try {
@@ -126,6 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string, role?: string) => {
+    isLoggingInRef.current = true;
     let firebaseUid = "";
     let firebaseError = null;
 
@@ -149,6 +156,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (mongoErr: any) {
       if (firebaseUid) await signOut(auth);
       throw firebaseError || mongoErr;
+    } finally {
+      isLoggingInRef.current = false;
     }
 
     localStorage.setItem('token', res.token);
