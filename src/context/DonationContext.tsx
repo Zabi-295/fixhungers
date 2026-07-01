@@ -231,6 +231,7 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    if (!currentUser) return;
     fetchDonationsRef.current();
     const interval = setInterval(() => {
       fetchDonationsRef.current();
