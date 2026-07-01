@@ -133,7 +133,6 @@ const connectDB = async () => {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
       serverSelectionTimeoutMS: 8000
     };
 
