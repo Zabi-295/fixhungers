@@ -1,26 +1,25 @@
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 require('dotenv').config({ path: 'c:/Users/jahan/Downloads/user-portal-main (5)/user-portal-main/server/.env' });
 
 async function run() {
-  console.log("Connecting to MongoDB using URI:", process.env.MONGO_URI);
-  const start = Date.now();
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000
-    });
-    console.log(`Connected in ${Date.now() - start}ms`);
+  console.log("Connecting using URI:", process.env.MONGO_URI);
+  const client = new MongoClient(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000
+  });
 
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    for (const coll of collections) {
-      const count = await mongoose.connection.db.collection(coll.name).countDocuments();
-      console.log(`Collection: ${coll.name} - Documents: ${count}`);
+  try {
+    await client.connect();
+    console.log("Connected successfully to server");
+    const db = client.db('fix-hunger');
+    const users = await db.collection('users').find({}).toArray();
+    console.log("Users in Database:");
+    for (const u of users) {
+      console.log(`- Email: ${u.email}, Role: ${u.role}, IsActive: ${u.isActive}, Name: ${u.name}`);
     }
   } catch (err) {
-    console.error("Connection failed:", err.message);
+    console.error("Error:", err.message);
   } finally {
-    await mongoose.disconnect();
+    await client.close();
   }
 }
 

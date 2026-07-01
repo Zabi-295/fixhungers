@@ -266,6 +266,32 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const sendMessageToUser = useCallback((userId: string, message: string, file?: { url: string; type: string; name: string }) => {
     if (!currentUser) return;
 
+    // Generate optimistic message object for instant rendering
+    const optimisticMessage = {
+      _id: `temp-${Date.now()}`,
+      senderId: currentUser.id,
+      senderName: currentUser.name || currentUser.email?.split('@')[0] || 'Me',
+      role: currentUser.role,
+      message: message || '',
+      file_url: file?.url,
+      file_type: file?.type,
+      file_name: file?.name,
+      read: false,
+      delivered: false,
+      createdAt: new Date().toISOString()
+    };
+
+    // Append optimistically to local messages state instantly
+    setActiveChat((prev) => {
+      if (!prev) return prev;
+      const exists = prev.messages.some(m => m.message === message && m.senderId === currentUser.id && m._id === optimisticMessage._id);
+      if (exists) return prev;
+      return {
+        ...prev,
+        messages: [...prev.messages, optimisticMessage]
+      };
+    });
+
     // Use socket for real-time delivery
     if (socket && isConnected) {
       socket.emit("sendMessage", {
@@ -281,12 +307,29 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       apiFetch(`/chats/${userId}`, {
         method: "POST",
         body: JSON.stringify({ message, file_url: file?.url, file_type: file?.type, file_name: file?.name }),
-      }).then(() => {
+      }).then((savedMsg) => {
         fetchConversations();
-        // Reload active chat
-        if (activeContactRef.current) {
-          apiFetch(`/chats/${userId}`).then(setActiveChat);
-        }
+        setActiveChat((prev) => {
+          if (!prev) return prev;
+          // Replace temp optimistic message with actual database message object
+          const updatedMessages = prev.messages.map((m) =>
+            m._id === optimisticMessage._id ? { ...savedMsg, senderId: savedMsg.sender } : m
+          );
+          return {
+            ...prev,
+            messages: updatedMessages
+          };
+        });
+      }).catch((err) => {
+        console.error("Failed to send message:", err);
+        // Fallback: Remove temporary message if it failed to deliver
+        setActiveChat((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.filter((m) => m._id !== optimisticMessage._id)
+          };
+        });
       });
     }
   }, [currentUser, socket, isConnected, fetchConversations]);
