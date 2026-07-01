@@ -235,13 +235,13 @@ const Messages = () => {
                 >
                   {/* User Avatar */}
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0 border border-border">
-                    {otherUser.name.charAt(0).toUpperCase()}
+                    {(otherUser.name || otherUser.email || "U").charAt(0).toUpperCase()}
                   </div>
 
                   {/* Info details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
-                      <span className="font-semibold text-sm text-foreground truncate">{otherUser.name}</span>
+                      <span className="font-semibold text-sm text-foreground truncate">{otherUser.name || otherUser.email || "Unknown User"}</span>
                       <span className="text-[10px] text-muted-foreground shrink-0">{time}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mb-1">
@@ -291,11 +291,11 @@ const Messages = () => {
 
                 {/* Participant details */}
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-border">
-                  {activeContact.name.charAt(0).toUpperCase()}
+                  {(activeContact.name || activeContact.email || "U").charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                    {activeContact.name}
+                    {activeContact.name || activeContact.email || "Unknown User"}
                     <Badge
                       variant="outline"
                       className={`text-[9px] px-1 py-0 font-medium ${
@@ -525,10 +525,10 @@ const Messages = () => {
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-border">
-                        {contact.name.charAt(0).toUpperCase()}
+                        {(contact.name || contact.email || "U").charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-foreground">{contact.name}</h4>
+                        <h4 className="font-semibold text-sm text-foreground">{contact.name || contact.email || "Unknown User"}</h4>
                         <p className="text-xs text-muted-foreground truncate max-w-[200px]">{contact.email}</p>
                       </div>
                     </div>

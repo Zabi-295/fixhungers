@@ -295,11 +295,11 @@ const AdminMessages = () => {
                     }`}
                   >
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0 border border-border">
-                      {otherUser.name.charAt(0).toUpperCase()}
+                      {(otherUser.name || otherUser.email || "U").charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline mb-1">
-                        <span className="font-semibold text-sm text-foreground truncate">{otherUser.name}</span>
+                        <span className="font-semibold text-sm text-foreground truncate">{otherUser.name || otherUser.email || "Unknown User"}</span>
                         <span className="text-[10px] text-muted-foreground shrink-0">{time}</span>
                       </div>
                       <div className="flex items-center gap-1.5 mb-1">
@@ -344,11 +344,11 @@ const AdminMessages = () => {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-border">
-                    {selectedUser.name.charAt(0).toUpperCase()}
+                    {(selectedUser.name || selectedUser.email || "U").charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                      {selectedUser.name}
+                      {selectedUser.name || selectedUser.email || "Unknown User"}
                       <Badge
                         variant="outline"
                         className={`text-[9px] px-1 py-0 font-medium ${
