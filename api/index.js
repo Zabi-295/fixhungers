@@ -120,15 +120,36 @@ if (process.env.GEMINI_API_KEY) {
 }
 
 
-// MongoDB Connection with Caching for Vercel
+// MongoDB Connection with Caching for Vercel Serverless
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB Connected");
-  } catch (err) {
-    console.error("MongoDB Connection Error:", err.message);
+  if (cached.conn) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 8000
+    };
+
+    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((m) => {
+      console.log("MongoDB Connected (New connection established)");
+      return m;
+    });
+  }
+  
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error("MongoDB Connection Error:", e.message);
+  }
+  return cached.conn;
 };
 
 app.use(async (req, res, next) => {

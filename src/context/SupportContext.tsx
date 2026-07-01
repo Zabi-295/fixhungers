@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import apiFetch from "@/lib/api";
 import { useAuth } from "./AuthContext";
 
@@ -34,6 +35,10 @@ interface SupportContextType {
 const SupportContext = createContext<SupportContextType | undefined>(undefined);
 
 export const SupportProvider = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const isPortalPage = location.pathname.startsWith("/provider") || 
+                       location.pathname.startsWith("/ngo") || 
+                       location.pathname.startsWith("/admin");
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const { currentUser } = useAuth();
 
@@ -47,12 +52,12 @@ export const SupportProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && isPortalPage) {
       fetchTickets();
       const interval = setInterval(fetchTickets, 30000); // Optimized to 30 seconds
       return () => clearInterval(interval);
     }
-  }, [currentUser]);
+  }, [currentUser, isPortalPage]);
 
   const sendMessage = async (message: string) => {
     await apiFetch("/support", {

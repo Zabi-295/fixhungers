@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import apiFetch from "@/lib/api";
 import { useAuth } from "./AuthContext";
 import useSocket from "@/hooks/useSocket";
@@ -61,6 +62,10 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const isPortalPage = location.pathname.startsWith("/provider") || 
+                       location.pathname.startsWith("/ngo") || 
+                       location.pathname.startsWith("/admin");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [contacts, setContacts] = useState<ChatUser[]>([]);
   const [activeChat, setActiveChat] = useState<Conversation | null>(null);
@@ -204,24 +209,24 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   // --- Initial data load + lightweight polling fallback ---
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && isPortalPage) {
       fetchConversations();
       fetchContacts();
       // Lightweight polling as fallback in case socket misses an event (e.g. reconnect)
       const interval = setInterval(fetchConversations, 15000); // Optimized to 15s
       return () => clearInterval(interval);
-    } else {
+    } else if (!currentUser) {
       setConversations([]);
       setContacts([]);
       setActiveChat(null);
       setActiveContact(null);
     }
-  }, [currentUser, fetchConversations]);
+  }, [currentUser, isPortalPage, fetchConversations]);
 
   // Poll active chat messages when socket is disconnected (e.g. on Vercel)
   useEffect(() => {
     const currentUserId = currentUser?.id || currentUser?._id || currentUser?.uid;
-    if (currentUserId && !isConnected && activeContact) {
+    if (currentUserId && !isConnected && activeContact && isPortalPage) {
       const targetContactId = activeContact._id || activeContact.id;
       const pollActiveChat = async () => {
         try {
@@ -240,7 +245,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       const pollInterval = setInterval(pollActiveChat, 6000);
       return () => clearInterval(pollInterval);
     }
-  }, [currentUser, isConnected, activeContact]);
+  }, [currentUser, isConnected, activeContact, isPortalPage]);
 
   // --- Actions ---
 

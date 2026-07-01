@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth, type UserProfile as AuthUserProfile } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationContext";
 import apiFetch from "@/lib/api";
@@ -148,6 +149,10 @@ const categoryEmojis: Record<string, string> = {
 const DonationContext = createContext<DonationContextType | undefined>(undefined);
 
 export const DonationProvider = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  const isPortalPage = location.pathname.startsWith("/provider") || 
+                       location.pathname.startsWith("/ngo") || 
+                       location.pathname.startsWith("/admin");
   const { currentUser, userProfile, refreshUser } = useAuth();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [profile, setProfile] = useState<ProviderProfile>(buildDefaultProfile(userProfile));
@@ -231,13 +236,13 @@ export const DonationProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || !isPortalPage) return;
     fetchDonationsRef.current();
     const interval = setInterval(() => {
       fetchDonationsRef.current();
     }, 15000); // 15 seconds polling to prevent request throttling
     return () => clearInterval(interval);
-  }, [currentUser]);
+  }, [currentUser, isPortalPage]);
 
   useEffect(() => {
     if (!currentUser) {
