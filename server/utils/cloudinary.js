@@ -1,8 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 
-const isConfigured = process.env.CLOUDINARY_CLOUD_NAME && 
-                     process.env.CLOUDINARY_API_KEY && 
-                     process.env.CLOUDINARY_API_SECRET;
+const isConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && 
+                        process.env.CLOUDINARY_API_KEY && 
+                        process.env.CLOUDINARY_API_SECRET);
 
 if (isConfigured) {
   cloudinary.config({
